@@ -1,4 +1,4 @@
-
+"start": "node index.js"
 {
   "name": "blog-project",
   "version": "1.0.0",
