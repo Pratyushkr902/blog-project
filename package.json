@@ -1,3 +1,4 @@
+"start": "node server.js"
 {
   "name": "blog-project",
   "version": "1.0.0",
