@@ -1,3 +1,17 @@
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// This is the correct way to add a route for the root URL
+app.get("/", (req, res) => {
+    res.send("Hello from the Jovial Flames backend!");
+});
+
+// ... your other routes (e.g., app.get("/api/products", ...))
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+}); 
 // Import required packages
 const express = require('express');
 const cors = require('cors');
