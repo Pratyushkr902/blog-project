@@ -1,19 +1,20 @@
- {
-  "name": "blog-project",
+{
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Backend for Jovial Flames",
-  "main": "Index.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node Index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.1"
+    "mongoose": "^8.19.0"
   }
 }
