@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jovial Flames — Premium Scented Candles</title>
+  <meta name="description" content="Jovial Flames — handcrafted premium scented candles. Shop soy candles, gift bundles, and home fragrances." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#fff8f4;
+      --card:#ffffff;
+      --accent:#d97706;
+      --accent-light: #fef3c7;
+      --muted:#6b7280;
+      --max-width:1100px;
+      --shadow: 0 4px 15px rgba(15,23,42,0.06);
+      --shadow-hover: 0 8px 25px rgba(15,23,42,0.1);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      color:#0f172a;
+      line-height:1.5;
+      transition: background .3s, color .3s;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container{
+      width:calc(100% - 2rem);
+      max-width:var(--max-width);
+      margin:0 auto;
+      padding:2rem 0;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding:1rem;
+      position:sticky;
+      top: 0;
+      background: rgba(255, 248, 244, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      transition: background .3s;
+      border-bottom: 1px solid #f1e9e4;
+    }
+   .brand{display:flex;align-items:center;gap:.8rem;text-decoration:none;color:inherit}
+    .logo{
+      width:40px;height:40px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),#fb923c);
+      display:grid;place-items:center;color:white;font-weight:700;box-shadow:var(--shadow);
+      transition: transform .2s;
+    }
+    .brand:hover .logo{ transform: rotate(-10deg) scale(1.1); }
+    nav{display:flex;gap:1.5rem;align-items:center}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600; transition: color 0.2s; position: relative; padding-bottom: 4px;}
+    nav a::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--accent);
+        transition: width 0.3s ease-in-out;
+    }
+    nav a:hover { color: var(--accent); }
+    nav a:hover::after { width: 100%; }
+
+    .btn{background:var(--accent);color:white;padding:.6rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:700;cursor:pointer;transition: transform 0.2s, opacity 0.2s, background-color 0.2s, box-shadow .2s;border:none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;}
+    .btn:hover{opacity:0.9; transform: scale(1.05); box-shadow: var(--shadow-hover);}
+    .btn:active{transform: scale(0.98);}
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; transform: scale(1); }
+    .btn.secondary { background: transparent; border: 1px solid #ddd; color: var(--muted); }
+    .btn.payment-btn { background-color: #16a34a; }
+
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:3rem;align-items:center;padding:2rem 0}
+    .hero h1{font-size:3rem;margin:0 0 .8rem; font-weight: 800; line-height: 1.1;}
+    .hero p{color:var(--muted);margin:0 0 1.5rem; font-size: 1.1rem;}
+    .hero .cta-row{display:flex;gap:.8rem;align-items:center}
+
+    .products{display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:1.5rem;margin-top:1.5rem}
+    .card{
+      background:var(--card);padding:1rem;border-radius:16px;box-shadow:var(--shadow);
+      display:flex;flex-direction:column;gap:.75rem;transition:transform .25s, box-shadow .25s;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn .5s forwards;
+    }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+    .card:hover{transform:translateY(-8px); box-shadow: var(--shadow-hover);}
+    .card .img{height:420px;border-radius:12px;overflow:hidden; background-color: #f0f0f0;}
+    .card .img img{width:100%;height:100%;object-fit:cover;border-radius:10px; transition: transform .3s ease-out;}
+    .card:hover .img img { transform: scale(1.05); }
+    .price{font-weight:800;color:#0f172a; font-size: 1.1rem;}
+    .muted{color:var(--muted);font-size:.95rem}
+
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem}
+    .feature{background:var(--card);padding:1.5rem;border-radius:16px; transition: transform .2s, box-shadow .2s;}
+    .feature:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+
+    .newsletter{margin-top:3.5rem;padding:2.5rem;border-radius:16px;background:linear-gradient(180deg,#fffdfb,#fff8f2); text-align: center;}
+    .news-form { display: flex; gap: 0.5rem; max-width: 450px; margin: 1rem auto 0; }
+    .news-input{flex:1;padding:.8rem;border-radius:10px;border:1px solid #eee;font-size:1rem; transition: box-shadow 0.2s;}
+    .news-input:focus{outline:none; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.3);}
+    
+    footer{margin-top:4rem;padding:2.5rem 0;color:var(--muted);font-size:.95rem; border-top: 1px solid #eee;}
+    
+    section { margin-top: 4.5rem; }
+    section h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 2.5rem; text-align: center; position: relative; }
+    section h2::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: var(--accent); border-radius: 2px;}
+    section h3 { font-size: 1.4rem; font-weight: 700; color: var(--accent); margin-top: 2.5rem; margin-bottom: 1.5rem; }
+
+    .footer-grid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-weight: 600; margin: 0 0.5rem; }
+    .footer-links a:hover { color: var(--accent); text-decoration: underline; }
+
+    #auth-modal, #policy-modal, #tracking-modal {display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001; place-items: center; backdrop-filter: blur(5px);}
+    .modal-content {background: var(--card); padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; width: 90%; position: relative; max-height: 80vh; overflow-y: auto; animation: slideInUp .3s;}
+    @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; }}
+    .modal-content h2 { margin-top: 0; text-align: center; }
+    .close-modal-btn {position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); transition: color .2s, transform .2s;}
+    .close-modal-btn:hover { color: #0f172a; transform: rotate(90deg); }
+    
+    #cartSidebar, #ordersSidebar{
+      position:fixed;
+      top:0;right:-420px;
+      width:400px;max-width:95%;
+      height:100vh;
+      background:var(--card);
+      box-shadow:-4px 0 20px rgba(0,0,0,0.1);
+      padding:1.5rem;
+      transition: right .3s cubic-bezier(0.2, 0.6, 0.4, 1);
+      z-index:9999;
+      display:flex;flex-direction:column;
+      gap: 0.8rem;
+    }
+    #cartSidebar.open, #ordersSidebar.open{right:0}
+    .cart-items, .order-list{flex:1;overflow-y:auto; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 0.5rem 0;}
+    .cart-item, .order-item{border-bottom:1px solid #eee;padding: .75rem .25rem; }
+    .cart-item{display:flex;justify-content:space-between;align-items:center}
+    .cart-item:last-child, .order-item:last-child { border-bottom: none; }
+    .remove-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; }
+    .cart-summary div { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .cart-summary .grand-total { font-weight: 800; font-size: 1.1rem; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem; }
+    .close-btn{background:transparent;border:none;font-size:1.5rem;cursor:pointer;margin-left:auto; line-height: 1;}
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.3rem; font-size: 0.9em; font-weight: 600; }
+
+    #toast{
+      position:fixed;
+      top:-100px;
+      left:50%;
+      transform:translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: .8rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      font-weight: 600;
+      z-index: 10002;
+      transition: top 0.4s cubic-bezier(0.2, 0.6, 0.4, 1);
+    }
+    #toast.show{ top: 20px; }
+    #toast.error{ background: #ef4444; }
+
+    .tracking-timeline { list-style: none; padding: 0; }
+    .tracking-timeline li { position: relative; padding-left: 30px; margin-bottom: 1.5rem; }
+    .tracking-timeline li::before { content: ''; position: absolute; left: 4px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #ccc; border: 2px solid var(--card); }
+    .tracking-timeline li::after { content: ''; position: absolute; left: 9px; top: 20px; width: 2px; height: calc(100% - 10px); background: #ccc; }
+    .tracking-timeline li:last-child::after { display: none; }
+    .tracking-timeline li.completed::before { background: var(--accent); }
+    .tracking-timeline li.completed::after { background: var(--accent); }
+    .tracking-timeline li.active::before { background: var(--accent); transform: scale(1.2); }
+    .tracking-timeline .status { font-weight: bold; }
+    .tracking-timeline .time { font-size: 0.85em; color: var(--muted); }
+
+    body.dark{
+      --bg:#0f172a;
+      --card:#1e293b;
+      color:#f8fafc;
+    }
+    body.dark header { background: rgba(15, 23, 42, 0.8); border-color: #334155; }
+    body.dark .card, body.dark .feature, body.dark form, body.dark #cartSidebar, body.dark #ordersSidebar, body.dark .modal-content, body.dark .newsletter {background:#1e293b;color:#f8fafc}
+    body.dark nav a, body.dark .footer-links a, body.dark .close-modal-btn {color:#cbd5e1}
+    body.dark .muted, body.dark .tracking-timeline .time {color:#94a3b8}
+    body.dark nav a:hover, body.dark .footer-links a:hover, body.dark .close-modal-btn:hover { color: white; }
+    body.dark .news-input, body.dark .form-group input, body.dark .form-group textarea { background: #334155; border-color: #475569; color: white;}
+    body.dark section h2, body.dark footer, body.dark .cart-summary .grand-total, body.dark .order-item, body.dark .cart-items, body.dark .order-list, body.dark .modal-content, body.dark #order-tracking-section, body.dark .tracking-timeline li::before { border-color: #334155; }
+    body.dark .btn.secondary { border-color: #475569; color: #cbd5e1;}
+    body.dark .remove-btn { background: #452323; color: #f87171; }
+    body.dark .logo { background: linear-gradient(135deg, var(--accent), #9a3412); }
+
+    @media (max-width: 992px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero aside { order: -1; margin-bottom: 2rem;}
+    }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      header { flex-wrap: wrap; justify-content: space-between; }
+      header > .brand { width: 100%; margin-bottom: 1rem; }
+      .features { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 1rem; }
+      .footer-grid > div { justify-self: center !important; text-align: center !important; }
+    }
+    
+    @media (max-width: 576px) {
+      .newsletter { flex-direction: column; align-items: stretch; padding: 1.5rem; }
+      .news-form { flex-direction: column; }
+      header > div:last-of-type {
+          gap: 0.4rem;
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr auto auto;
+      }
+      #auth-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+      #user-buttons { font-size: 0.8rem; }
+      .btn { padding: .6rem .8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="toast"></div>
+
+  <div class="container">
+    <header>
+      <a class="brand" href="#">
+        <div class="logo" aria-hidden><img src="images/jovial-flames-logo.png" alt="Jovial Flames Logo" width="26"></div>
+        <div>
+          <div style="font-weight:800">Jovial Flames</div>
+          <div style="font-size:.85rem;color:var(--muted)">Premium Handcrafted Candles</div>
+        </div>
+      </a>
+  
+      <nav aria-label="Primary">
+        <a href="#products">Collection</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a href="#testimonials">Reviews</a>
+      </nav>
+
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <div id="auth-buttons">
+          <button class="btn secondary" onclick="openAuthModal('login')">Log In</button>
+          <button class="btn" onclick="openAuthModal('signup')">Sign Up</button>
+        </div>
+        <div id="user-buttons" style="display: none; gap: .6rem; align-items: center;">
+          <span id="user-greeting" style="font-weight: 600;"></span>
+          <button class="btn secondary" onclick="toggleOrders()">📦 Orders</button>
+          <button class="btn" onclick="logoutUser()">Log Out</button>
+        </div>
+        <button class="btn" onclick="toggleCart()" style="position: relative;">
+          🛒 
+          <span id="cartCountBadge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.75em; display: none; place-items: center;"></span>
+        </button>
+        <button id="darkToggle" class="btn" style="background:#334155">🌙</button>
+      </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+              <h1>Light calm. Breathe joy.</h1>
+              <p>At Jovial Flames, we believe a candle is more than just a glow—it's a celebration of moments, memories, and moods. Bring warmth and elegance to your space.</p>
+              <div class="cta-row">
+                <a class="btn" href="#products">Browse Collection</a>
+                <a class="btn secondary" href="#about">Our Story</a>
+              </div>
+            </div>
+            <aside>
+              <div style="background:#fff7ed;padding:1rem;border-radius:16px;box-shadow:var(--shadow)">
+                <div style="font-size:.95rem;color:var(--muted)">Featured Product</div>
+                <div class="img" style="height: 420px; margin: .6rem 0;">
+                   <img src="images/amber-cream-jar.jpg" alt="Amber Cream Candle" style="width:100%;height:100%;object-fit:cover;border-radius:12px" loading="lazy">
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+                  <div>
+                    <div style="font-weight:800">Amber Cream Jar</div>
+                    <div class="muted">Price: Rs. 351</div>
+                  </div>
+                  <button class="btn" onclick="addToCart(this, 'Amber Cream Jar', 351)">Add to Cart</button>
+                </div>
+              </div>
+            </aside>
+          </section>
+    
+          <section id="products">
+            <h2>Our Full Collection</h2>
+            
+            <h3>Decorative & Sculptural</h3>
+            <div class="products">
+                <article class="card"><div class="img"><img src="images/mini-bubble.jpg" alt="Mini-Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Mini-Bubble</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Mini-Bubble', 45)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/big-standing-bubble.jpg" alt="Big Standing Bubble Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Big Bubble</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Big Bubble', 75)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/vintage-lady.jpg" alt="Vintage Lady" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Vintage Lady</div><div class="muted">48 Hrs Burn Time</div></div><div class="price">Rs. 199</div></div><button class="btn" onclick="addToCart(this, 'Vintage Lady', 199)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/banding-bubble.jpg" alt="Banding Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Banding Bubble</div><div class="muted">18 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Banding Bubble', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/family-bear.jpg" alt="Family Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Family Bear</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 151</div></div><button class="btn" onclick="addToCart(this, 'Family Bear', 151)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/teddy-bear.jpg" alt="Teddy Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Teddy Bear</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Teddy Bear', 51)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/s-candle.jpg" alt="S-Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">S-Candle</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 25</div></div><button class="btn" onclick="addToCart(this, 'S-Candle', 25)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/abstract-face.jpg" alt="Abstract Face" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Abstract Face</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Abstract Face', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/korean-love-sign.jpg" alt="Korean Love Sign" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Korean Love Sign</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Korean Love Sign', 18)">Add to Cart</button></article>
+            </div>
+    
+            <h3>Pillar Candles</h3>
+            <div class="products">
+                <article class="card"><div class="img"><img src="images/rosy-pillar.jpg" alt="Rosy Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Pillar</div><div class="muted">16 Hrs Burn Time</div></div><div class="price">Rs. 91</div></div><button class="btn" onclick="addToCart(this, 'Rosy Pillar', 91)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/crafted-pillar.jpg" alt="Crafted Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Pillar</div><div class="muted">Soya Wax</div></div><div class="price">Rs. 111</div></div><button class="btn" onclick="addToCart(this, 'Crafted Pillar', 111)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/circular-pillar.jpg" alt="Circular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Circular Pillar</div><div class="muted">10 Hrs Burn Time</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Circular Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/love-pillar.jpg" alt="Love Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Love Pillar</div><div class="muted">Heart Shaped</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Love Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/rosy-semi-pillar.jpg" alt="Rosy Semi Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Semi Pillar</div><div class="muted">8 Hrs Burn Time</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Rosy Semi Pillar', 45)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/lace-pillar.jpg" alt="Lace Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lace Pillar</div><div class="muted">12 Hrs Burn Time</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Lace Pillar', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/rectangular-pillar.jpg" alt="Rectangular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rectangular Pillar</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Rectangular Pillar', 65)">Add to Cart</button></article>
+            </div>
+    
+            <h3>Floral Collection</h3>
+            <div class="products">
+                <article class="card"><div class="img"><img src="images/peony-flower.jpg" alt="Peony Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Peony Flower</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 90</div></div><button class="btn" onclick="addToCart(this, 'Peony Flower', 90)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/lotus-candle.jpg" alt="Lotus" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lotus Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Lotus Candle', 51)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/sun-flower.jpg" alt="Sun Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Sun Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Sun Flower', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/nut-flower.jpg" alt="Nut Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Nut Flower</div><div class="muted">15 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Nut Flower', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/blossom-flower.jpg" alt="Blossom Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Blossom Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Blossom Flower', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/basket.jpg" alt="Basket Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Basket Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Basket Candle', 75)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/heart-linear.jpg" alt="Heart Linear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Heart Linear</div><div class="muted">Parafin wax</div></div><div class="price">Rs. 21</div></div><button class="btn" onclick="addToCart(this, 'Heart Linear', 21)">Add to Cart</button></article>
+            </div>
+            
+            <h3>Sweet Treats Collection</h3>
+            <div class="products">
+                <article class="card"><div class="img"><img src="images/ladoo-candle.jpg" alt="Ladoo" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Ladoo Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Ladoo Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/kaju-katli-candle.jpg" alt="Kaju Katli" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Kaju Katli Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Kaju Katli Candle', 15)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/gujiya-candle.jpg" alt="Gujiya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Gujiya Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Gujiya Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/imarti-candle.jpg" alt="Imarti" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Imarti Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Imarti Candle', 15)">Add to Cart</button></article>
+            </div>
+            
+            <h3>Jars, Hampers & Essentials</h3>
+            <div class="products">
+                <article class="card"><div class="img"><img src="images/amber-cream-jar.jpg" alt="Amber Cream Jar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Amber Cream Jar</div><div class="muted">Glittered Gel Wax</div></div><div class="price">Rs. 351</div></div><button class="btn" onclick="addToCart(this, 'Amber Cream Jar', 351)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/velvet-valentine-jar.jpg" alt="Velvet Valentine" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Velvet Valentine Jar</div><div class="muted">Soya & Gel Wax</div></div><div class="price">Rs. 451</div></div><button class="btn" onclick="addToCart(this, 'Velvet Valentine Jar', 451)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/classic-hamper.jpg" alt="Classic Hamper" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Classic Hamper</div><div class="muted">5-in-1 Gift Box</div></div><div class="price">Rs. 181</div></div><button class="btn" onclick="addToCart(this, 'Classic Hamper', 181)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/crafted-diya.jpg" alt="Crafted Diya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Diya</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Crafted Diya', 45)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="images/flower-candle.jpg" alt="Flower Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Flower Candle</div><div class="muted">Parafin Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Flower Candle', 15)">Add to Cart</button></article>
+            </div>
+          </section>
+    
+          <section id="about">
+            <h2>Our Story</h2>
+            <p class="muted" style="max-width: 700px; margin: 0 auto 2rem; text-align: center;">We believe in the power of scent to transform a space and soothe the soul. Jovial Flames was born from a passion for creating high-quality, eco-friendly candles. We hand-pour each candle in small batches using 100% natural soy wax, lead-free cotton wicks, and premium fragrance oils. Our mission is to bring warmth, light, and a touch of joy into your home.</p>
+          </section>
+    
+          <section id="testimonials">
+            <h2>Customer Reviews</h2>
+            <div class="features">
+              <div class="feature">⭐⭐⭐⭐⭐ <p>"The Vintage Lady candle is a work of art! It looks stunning on my mantelpiece and smells divine." — Priya S.</p></div>
+              <div class="feature">⭐⭐⭐⭐⭐ <p>"I love the bubble candles! They are so trendy and burn really well. Great for gifting!" — Amit K.</p></div>
+              <div class="feature">⭐⭐⭐⭐⭐ <p>"The Classic Hamper was the perfect Diwali gift. Beautifully packaged and smells amazing." — Sanjana R.</p></div>
+            </div>
+          </section>
+    
+          <section id="contact">
+            <h2>Get In Touch</h2>
+            <div style="text-align: center;">
+                <p class="muted">For any inquiries or bulk orders, feel free to reach out:</p>
+                <p><strong>Email:</strong> <a href="mailto:jovialflames@gmail.com" style="color: var(--accent);">jovialflames@gmail.com</a></p>
+                <p><strong>Phone:</strong> <a href="https://wa.me/919241224192" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">+91 92412 24192 (WhatsApp)</a></p>
+            </div>
+            <form onsubmit="handleSubmit(event)" style="background:var(--card);padding:1.5rem;border-radius:12px;box-shadow:var(--shadow); display:flex; flex-direction:column; gap: 0.8rem; max-width: 600px; margin: 1.5rem auto 0;">
+              <div class="form-group"><label for="name">Name</label><input id="name" class="news-input" required /></div>
+              <div class="form-group"><label for="email">Email</label><input id="email" type="email" class="news-input" required /></div>
+              <div class="form-group"><label for="message">Message</label><textarea id="message" rows="4" class="news-input" required></textarea></div>
+              <button class="btn" type="submit" style="margin-top:.6rem; align-self: flex-start;">Send Message</button>
+            </form>
+          </section>
+    
+          <section class="newsletter">
+            <h2 style="border: none; margin: 0 0 0.5rem; font-size: 1.8rem;">Get 10% Off!</h2>
+            <p class="muted">Subscribe to our newsletter for exclusive deals and a discount on your first order.</p>
+            <div class="news-form">
+              <input class="news-input" type="email" placeholder="Enter your email" id="newsletterEmail" />
+              <button class="btn" onclick="subscribe()">Subscribe</button>
+            </div>
+          </section>
+    </main>
+
+    <section id="auth-modal">
+        <div class="modal-content">
+          <button onclick="closeAuthModal()" class="close-modal-btn" aria-label="Close authentication modal">×</button>
+          
+          <div id="login-view">
+            <h2>Login</h2>
+            <form id="login-form">
+              <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" class="news-input" required /></div>
+              <div class="form-group"><label for="login-password">Password</label><input type="password" id="login-password" class="news-input" required /></div>
+              <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Log In</button>
+            </form>
+            <p style="text-align: center; font-size: 0.9em; margin-top: 1.5rem;">
+              <a href="#" onclick="updateAuthModalView('forgot')" style="color: var(--accent);">Forgot Password?</a>
+              <br><br>
+              Don't have an account? <a href="#" onclick="updateAuthModalView('signup')" style="color: var(--accent);">Sign up</a>
+            </p>
+          </div>
+          
+          <div id="signup-view" style="display: none;">
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <div class="form-group"><label for="signup-name">Name</label><input type="text" id="signup-name" class="news-input" required /></div>
+                <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" class="news-input" required /></div>
+                <div class="form-group"><label for="signup-password">Password</label><input type="password" id="signup-password" class="news-input" minlength="6" required /></div>
+                <small class="muted" style="font-size: 0.8em; text-align: center; display: block;">Password must be at least 6 characters long.</small>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Create Account</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">Already have an account? <a href="#" onclick="updateAuthModalView('login')" style="color: var(--accent);">Log in</a></p>
+          </div>
+    
+          <div id="verify-view" style="display: none;">
+            <h2>Verify Your Email</h2>
+            <p class="muted" style="text-align: center; font-size: 0.9em;">An OTP has been sent to <strong id="otp-email-display"></strong>. Please enter it below.</p>
+            <form id="verify-form">
+                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required /></div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Verify & Sign Up</button>
+            </form>
+          </div>
+    
+          <div id="forgot-view" style="display: none;">
+            <h2>Forgot Password</h2>
+            <p class="muted" style="text-align: center; font-size: 0.9em;">Enter your email to receive a password reset OTP.</p>
+            <form id="forgot-form">
+                <div class="form-group"><label for="forgot-email">Email</label><input type="email" id="forgot-email" class="news-input" required /></div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Send OTP</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;"><a href="#" onclick="updateAuthModalView('login')" style="color: var(--accent);">Back to Login</a></p>
+          </div>
+    
+          <div id="reset-view" style="display: none;">
+            <h2>Reset Password</h2>
+            <p class="muted" style="text-align: center; font-size: 0.9em;">Enter the OTP from your email and your new password.</p>
+            <form id="reset-form">
+                <div class="form-group"><label for="reset-otp">OTP Code</label><input type="text" id="reset-otp" class="news-input" required /></div>
+                <div class="form-group"><label for="reset-password">New Password</label><input type="password" id="reset-password" class="news-input" minlength="6" required /></div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Reset Password</button>
+            </form>
+          </div>
+    
+        </div>
+      </section>
+    
+      <section id="policy-modal">
+          <div class="modal-content" style="max-width: 600px;">
+              <button onclick="closePolicyModal()" class="close-modal-btn" aria-label="Close policy modal">×</button>
+              <h2 id="policy-title"></h2>
+              <div id="policy-content" class="muted"></div>
+          </div>
+      </section>
+    
+      <section id="tracking-modal">
+        <div class="modal-content">
+            <button onclick="closeTrackingModal()" class="close-modal-btn" aria-label="Close tracking modal">×</button>
+            <h2>Order Tracking</h2>
+            <p class="muted">Order ID: <strong id="tracking-order-id"></strong></p>
+            <div id="tracking-details"></div>
+        </div>
+      </section>
+    
+      <aside id="cartSidebar">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <h3>Your Cart</h3>
+          <button class="close-btn" onclick="toggleCart()" aria-label="Close cart">×</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div id="cartSummary" class="cart-summary"></div>
+        <div id="minOrderNotice" class="muted" style="text-align:center; padding: 0.5rem; background: var(--accent-light); border-radius: 8px; display: none; color: var(--accent); font-weight: 600;"></div>
+    
+        <div id="checkout-section">
+            <h4 style="margin-top: 1rem;">Delivery Details</h4>
+            <div class="form-group"><label for="custName">Full Name</label><input type="text" id="custName" placeholder="e.g. Priya Sharma" class="news-input" required></div>
+            <div class="form-group"><label for="custPhone">Phone Number</label><input type="tel" id="custPhone" placeholder="10-digit mobile number" class="news-input" required></div>
+            <div class="form-group"><label for="custAddr">Full Address</label><textarea id="custAddr" placeholder="House No, Street, Landmark..." rows="3" class="news-input" required></textarea></div>
+            <div class="form-group"><label for="custPin">Pincode</label><input type="text" id="custPin" placeholder="e.g. 110001" class="news-input" required></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem;">
+              <button class="btn secondary" onclick="placeOrder('cod')">Pay on Delivery</button>
+              <button class="btn payment-btn" onclick="placeOrder('online')">Pay Online</button>
+            </div>
+        </div>
+      </aside>
+    
+      <aside id="ordersSidebar">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <h3>Your Orders</h3>
+          <button class="close-btn" onclick="toggleOrders()" aria-label="Close orders">×</button>
+        </div>
+        <div class="order-list" id="orderList"></div>
+        <div id="order-tracking-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+          <h4>Track an Order</h4>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="trackOrderIdInput" placeholder="Enter Order ID" class="news-input" style="flex: 1;">
+            <button class="btn" onclick="trackOrderById()">Track</button>
+          </div>
+        </div>
+      </aside>
+
+    <footer>
+      <div class="footer-grid">
+        <div class="brand" style="opacity: 0.8; justify-self: start;">
+           <a href="#" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: .8rem;">
+             <div class="logo" aria-hidden style="width: 32px; height: 32px; font-size: 0.9rem; padding: 2px;"><img src="images/jovial-flames-logo.png" alt="JF" width="20"></div>
+             <div>
+                 <div style="font-weight:700">Jovial Flames</div>
+                 <div style="font-size:.8rem;color:var(--muted)">© 2025</div>
+             </div>
+           </a>
+        </div>
+        <div class="muted footer-links">
+            Follow on <a href="https://www.instagram.com/jovial.flames" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </div>
+        <div class="muted footer-links" style="font-size: 0.9em; justify-self: end; text-align: right;">
+          <a href="#" onclick="openPolicyModal('return')">Return Policy</a> • 
+          <a href="#" onclick="openPolicyModal('privacy')">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast"></div>
+
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.05}s`;
+      });
+
+      const getElement = id => document.getElementById(id);
+      const showToast = (message, isError = false) => {
+        const toast = getElement("toast");
+        toast.textContent = message;
+        toast.className = isError ? "error" : "success";
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      };
+
+      // --- Modal Management ---
+      const authModal = getElement("auth-modal");
+      const policyModal = getElement("policy-modal");
+      const trackingModal = getElement("tracking-modal");
+      const modalViews = ['login-view', 'signup-view', 'verify-view', 'forgot-view', 'reset-view'];
+      
+      window.openAuthModal = (formType) => { authModal.style.display = "grid"; updateAuthModalView(formType); };
+      window.closeAuthModal = () => { authModal.style.display = "none"; };
+      window.openPolicyModal = (type) => { getElement('policy-title').textContent = policyData[type].title; getElement('policy-content').innerHTML = policyData[type].content; policyModal.style.display = 'grid'; };
+      window.closePolicyModal = () => { policyModal.style.display = 'none'; };
+      window.openTrackingModal = () => { trackingModal.style.display = 'grid'; };
+      window.closeTrackingModal = () => { trackingModal.style.display = 'none'; };
+
+      window.updateAuthModalView = (viewName) => {
+          modalViews.forEach(viewId => {
+              getElement(viewId).style.display = viewId.startsWith(viewName) ? 'block' : 'none';
+          });
+      };
+      
+      const policyData = {
+          privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us. It is Jovial Flames' policy to respect your privacy regarding any information we may collect from you across our website.</p><p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent...</p>` },
+          return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames.</p><p><strong>Returns:</strong> Due to the nature of our products, we do not accept returns or exchanges. All sales are final...</p>` }
+      };
+
+      // --- Authentication Logic ---
+      const authButtons = getElement("auth-buttons");
+      const userButtons = getElement("user-buttons");
+      const userGreeting = getElement("user-greeting");
+      
+      let mockUsers = JSON.parse(localStorage.getItem('mockUsers')) || [];
+      const saveUsers = () => localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
+      
+      let pendingUser = null;
+      let emailToReset = null;
+
+      const updateUserUI = (user) => {
+        if (user) {
+          authButtons.style.display = "none";
+          userButtons.style.display = "flex";
+          userGreeting.textContent = `Hello, ${user.name.split(' ')[0]}!`;
+        } else {
+          authButtons.style.display = "flex";
+          userButtons.style.display = "none";
+          userGreeting.textContent = "";
+        }
+      };
+
+      const checkAuthState = () => {
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        updateUserUI(loggedInUser);
+      };
+
+      // Signup Flow
+      getElement('signup-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = getElement('signup-name').value.trim();
+        const email = getElement('signup-email').value.trim();
+        const password = getElement('signup-password').value;
+        if (password.length < 6) return showToast("Password must be at least 6 characters.", true);
+        if (mockUsers.some(user => user.email === email)) return showToast("This email is already registered.", true);
+        
+        pendingUser = { name, email, password, orders: [] };
+        const signupButton = e.target.querySelector('button');
+        signupButton.disabled = true;
+        signupButton.textContent = 'Sending...';
+
+        fetch('http://localhost:3001/api/signup-request-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: pendingUser.email })
+        })
+        .then(response => {
+            if (!response.ok) { throw new Error('Network response was not ok'); }
+            return response.json();
+        })
+        .then(data => {
+            showToast(data.message);
+            if (data.message.includes("sent successfully")) {
+                getElement('otp-email-display').textContent = email;
+                updateAuthModalView('verify');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Failed to connect to the server. Is it running?', true);
+        })
+        .finally(() => {
+            signupButton.disabled = false;
+            signupButton.textContent = 'Create Account';
+        });
+      });
+
+      // Verification Flow
+      getElement('verify-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const otp = getElement('verify-otp').value;
+        const verifyButton = e.target.querySelector('button');
+        verifyButton.disabled = true;
+        verifyButton.textContent = 'Verifying...';
+
+        const userData = { ...pendingUser, otp };
+
+        fetch('http://localhost:3001/api/signup-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === "User created successfully.") {
+                showToast(data.message, false);
+                mockUsers.push(pendingUser);
+                saveUsers();
+                localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
+                closeAuthModal();
+                updateUserUI(pendingUser);
+                pendingUser = null;
+            } else {
+                showToast(data.message, true);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Failed to connect to the server.', true);
+        })
+        .finally(() => {
+            verifyButton.disabled = false;
+            verifyButton.textContent = 'Verify & Sign Up';
+        });
+      });
+      
+      // Login Flow
+      getElement('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = getElement('login-email').value.trim();
+        const password = getElement('login-password').value;
+        const user = mockUsers.find(u => u.email === email && u.password === password);
+        if (user) {
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          showToast("Logged in successfully!");
+          closeAuthModal();
+          updateUserUI(user);
+        } else {
+          showToast("Invalid email or password.", true);
+        }
+      });
+
+      // Forgot Password Flow
+      getElement('forgot-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const email = getElement('forgot-email').value.trim();
+          emailToReset = email;
+          const forgotButton = e.target.querySelector('button');
+          forgotButton.disabled = true;
+          forgotButton.textContent = 'Sending...';
+
+          fetch('http://localhost:3001/api/forgot-password-request-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+          })
+          .then(response => response.json())
+          .then(data => {
+              showToast(data.message);
+              updateAuthModalView('reset');
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              showToast('Failed to connect to the server.', true);
+          })
+          .finally(() => {
+              forgotButton.disabled = false;
+              forgotButton.textContent = 'Send OTP';
+          });
+      });
+
+      // Reset Password Flow
+      getElement('reset-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const otp = getElement('reset-otp').value;
+          const newPassword = getElement('reset-password').value;
+          if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
+
+          const resetButton = e.target.querySelector('button');
+          resetButton.disabled = true;
+          resetButton.textContent = 'Resetting...';
+
+          fetch('http://localhost:3001/api/reset-password-verify-otp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: emailToReset, otp, newPassword })
+          })
+          .then(response => response.json())
+          .then(data => {
+              showToast(data.message);
+              if (data.message === "Password has been reset successfully.") {
+                  const userIndex = mockUsers.findIndex(u => u.email === emailToReset);
+                  if (userIndex !== -1) {
+                      mockUsers[userIndex].password = newPassword;
+                      saveUsers();
+                  }
+                  emailToReset = null;
+                  updateAuthModalView('login');
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              showToast('Failed to connect to the server.', true);
+          })
+          .finally(() => {
+              resetButton.disabled = false;
+              resetButton.textContent = 'Reset Password';
+          });
+      });
+
+      window.logoutUser = () => {
+        localStorage.removeItem('loggedInUser');
+        showToast("Logged out successfully.");
+        updateUserUI(null);
+      };
+
+      // --- Order & Tracking Logic ---
+      const ordersSidebar = getElement("ordersSidebar");
+      const orderList = getElement("orderList");
+
+      window.toggleOrders = () => {
+        ordersSidebar.classList.toggle("open");
+        if (ordersSidebar.classList.contains("open")) { renderOrders(); }
+      };
+      
+      window.trackOrderById = () => {
+          const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
+          if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
+          const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+          if (!loggedInUser || !loggedInUser.orders) return showToast("No orders found for this account.", true);
+          const order = loggedInUser.orders.find(o => o.id === orderIdToTrack);
+          if (order) {
+            showTrackingDetails(orderIdToTrack);
+          } else {
+            showToast(`Order #${orderIdToTrack} not found.`, true);
+          }
+      };
+
+      window.showTrackingDetails = (orderId) => {
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        if (!loggedInUser) return;
+        const order = loggedInUser.orders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        getElement('tracking-order-id').textContent = order.id;
+        const trackingDetailsContainer = getElement('tracking-details');
+        
+        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+        const currentStatusIndex = statuses.indexOf(order.status);
+
+        let timelineHTML = '<ul class="tracking-timeline">';
+        statuses.forEach((status, index) => {
+            const isCompleted = index < currentStatusIndex;
+            const isActive = index === currentStatusIndex;
+            let className = '';
+            if (isActive) className = 'active';
+            if (isCompleted) className = 'completed';
+
+            timelineHTML += `<li class="${className}">
+                <div class="status">${status}</div>
+                ${(isActive || isCompleted) ? `<div class="time">${new Date(order.lastUpdate).toLocaleString()}</div>` : ''}
+            </li>`;
+        });
+        timelineHTML += '</ul>';
+
+        trackingDetailsContainer.innerHTML = timelineHTML;
+        openTrackingModal();
+      };
+      
+      const simulateTrackingUpdate = (orderId) => {
+          const statuses = ["Packed", "Shipped", "Out for Delivery", "Delivered"];
+          let statusIndex = 0;
+
+          const interval = setInterval(() => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if(!loggedInUser) { clearInterval(interval); return; }
+            const userIndex = mockUsers.findIndex(u => u.email === loggedInUser.email);
+            if(userIndex === -1) { clearInterval(interval); return; }
+            const orderIndex = mockUsers[userIndex].orders.findIndex(o => o.id === orderId);
+
+            if (statusIndex >= statuses.length || orderIndex === -1) {
+              clearInterval(interval);
+              return;
+            }
+
+            mockUsers[userIndex].orders[orderIndex].status = statuses[statusIndex];
+            mockUsers[userIndex].orders[orderIndex].lastUpdate = Date.now();
+            saveUsers();
+            localStorage.setItem('loggedInUser', JSON.stringify(mockUsers[userIndex]));
+
+            if(trackingModal.style.display === 'grid' && getElement('tracking-order-id').textContent === orderId) {
+                showTrackingDetails(orderId);
+            }
+            
+            showToast(`Order #${orderId} is now: ${statuses[statusIndex]}`);
+            statusIndex++;
+          }, 10000);
+      };
+
+      const renderOrders = () => {
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        if (!loggedInUser || !loggedInUser.orders || loggedInUser.orders.length === 0) {
+          orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+          return;
+        }
+        orderList.innerHTML = [...loggedInUser.orders].reverse().map(order => {
+          return `<div class="order-item">
+              <div>
+                <strong>Order: #${order.id}</strong>
+                <div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div>
+                <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total Paid: Rs. ${order.grandTotal}</div>
+              </div>
+              <button class="btn secondary" style="padding: 0.4rem 0.8rem;" onclick="showTrackingDetails('${order.id}')">Track</button>
+            </div>`;
+        }).join('');
+      };
+
+      // --- Misc UI & Cart Logic ---
+      window.handleSubmit = (e) => { e.preventDefault(); showToast(`Thanks, ${getElement('name').value}! We'll be in touch.`); e.target.reset(); };
+      window.subscribe = () => { const email = getElement('newsletterEmail').value; if (!email || !email.includes('@')) return showToast("Please enter a valid email.", true); showToast(`Discount code sent to ${email}!`); getElement('newsletterEmail').value = ""; };
+      getElement("darkToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙"; localStorage.setItem('dark-mode', document.body.classList.contains('dark')); });
+
+      let cart = [];
+      const MIN_ORDER_VALUE = 199;
+      const cartSidebar = getElement("cartSidebar");
+      const cartItemsContainer = getElement("cartItems");
+      const cartSummaryContainer = getElement("cartSummary");
+      const cartCountBadge = getElement("cartCountBadge");
+      const minOrderNotice = getElement("minOrderNotice");
+
+      const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
+      const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
+
+      window.addToCart = (button, name, price) => {
+        const existingItem = cart.find(item => item.name === name);
+        if (existingItem) { existingItem.quantity++; } 
+        else { cart.push({ name, price: Number(price), quantity: 1 }); }
+        showToast(`${name} added to cart!`);
+        renderCart();
+        saveCart();
+        cartSidebar.classList.add("open");
+        const originalText = button.textContent;
+        button.textContent = "Added ✔️";
+        button.disabled = true;
+        setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
+      };
+
+      const renderCart = () => {
+        let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+        if (cart.length === 0) {
+          cartItemsContainer.innerHTML = "<div class='muted' style='text-align:center; padding: 1rem;'>Your cart is empty</div>";
+          cartSummaryContainer.innerHTML = "";
+          cartCountBadge.style.display = 'none';
+          minOrderNotice.style.display = 'none';
+          getElement('checkout-section').style.display = 'none';
+          return;
+        }
+        
+        cartItemsContainer.innerHTML = cart.map((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            return `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${itemTotal}</div></div><button class="remove-btn" onclick="removeItem(${index})" aria-label="Remove ${item.name}">×</button></div>`;
+        }).join('');
+
+        let shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
+        let shippingText = (shippingCharges > 0) ? `Rs. ${shippingCharges}` : `Free`;
+        const grandTotal = subtotal + shippingCharges;
+
+        cartSummaryContainer.innerHTML = `
+          <div><span>Subtotal</span> <span>Rs. ${subtotal}</span></div>
+          <div><span>Shipping</span> <span>${shippingText}</span></div>
+          <div class="grand-total"><span>Grand Total</span> <span>Rs. ${grandTotal}</span></div>
+        `;
+        cartCountBadge.textContent = totalItems;
+        cartCountBadge.style.display = 'grid';
+
+        if (subtotal < MIN_ORDER_VALUE) {
+          minOrderNotice.textContent = `Minimum order is Rs. ${MIN_ORDER_VALUE}. Add Rs. ${MIN_ORDER_VALUE - subtotal} more.`;
+          minOrderNotice.style.display = 'block';
+          getElement('checkout-section').style.display = 'none';
+        } else {
+          minOrderNotice.style.display = 'none';
+          getElement('checkout-section').style.display = 'block';
+        }
+      };
+
+      window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
+      window.toggleCart = () => cartSidebar.classList.toggle("open");
+
+      window.placeOrder = (paymentMethod) => {
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+          toggleCart();
+          openAuthModal('login');
+          return showToast("Please log in to place an order.", true);
+        }
+
+        const name = getElement("custName").value.trim(), phone = getElement("custPhone").value.trim(), address = getElement("custAddr").value.trim(), pincode = getElement("custPin").value.trim();
+        if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        if (subtotal < MIN_ORDER_VALUE) return showToast(`Minimum order of Rs. ${MIN_ORDER_VALUE} is required.`, true);
+
+        const shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
+        const grandTotal = subtotal + shippingCharges;
+        
+        const orderId = `JF-${Date.now().toString().slice(-6)}`;
+        const newOrder = { 
+            id: orderId, 
+            date: new Date().toLocaleDateString(), 
+            items: [...cart], 
+            grandTotal, 
+            paymentMethod,
+            status: "Order Placed",
+            lastUpdate: Date.now()
+        };
+        
+        if (paymentMethod === 'online') {
+            return showToast("Online payment is not yet available. Please choose Pay on Delivery.", true);
+        }
+        
+        const userIndex = mockUsers.findIndex(u => u.email === loggedInUser.email);
+        if (userIndex !== -1) {
+            if (!mockUsers[userIndex].orders) mockUsers[userIndex].orders = [];
+            mockUsers[userIndex].orders.push(newOrder);
+            saveUsers();
+            localStorage.setItem('loggedInUser', JSON.stringify(mockUsers[userIndex]));
+        }
+        showToast(`Thank you, ${name.split(' ')[0]}! Your order #${orderId} is placed.`);
+        cart.length = 0;
+        saveCart();
+        renderCart();
+        ['custName', 'custPhone', 'custAddr', 'custPin'].forEach(id => getElement(id).value = "");
+        toggleCart();
+        
+        simulateTrackingUpdate(orderId);
+      };
+
+      // --- Initial Load ---
+      const loadDarkMode = () => {
+        if (localStorage.getItem('dark-mode') === 'true') {
+            document.body.classList.add('dark');
+            getElement("darkToggle").textContent = "☀️";
+        }
+      };
+      
+      loadDarkMode();
+      loadCart();
+      checkAuthState();
+    });
+</script>
+</html>
