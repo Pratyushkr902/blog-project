@@ -36,6 +36,34 @@ app.post('/api/signup-request-otp', (req, res) => {
   if (users.find(u => u.email === email)) {
     return res.status(400).json({ message: "Email already registered." });
   }
+app.get('/', (req, res) => {
+  res.send('Welcome to Jovial Flames API! 🎉 Server is running.');
+});
+
+// --- THIS IS YOUR SIGNUP ROUTE WITH THE DEBUGGING LOGS ---
+app.post('/api/signup-request-otp', (req, res) => {
+  
+  // --- LOG 1 ---
+  console.log('1. Signup request received for:', req.body.email);
+
+  // Your logic to generate and send the OTP email would go here.
+  // This is the part that might be slow.
+  
+  // --- LOG 2 ---
+  console.log('2. Now sending response back to the browser.');
+
+  // This sends a response back to the browser immediately.
+  res.json({ message: "OTP request received by server." });
+});
+// --- END OF THE SIGNUP ROUTE ---
+
+
+// Add any other API routes here...
+
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+}); 
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
   otps[email] = otp;
