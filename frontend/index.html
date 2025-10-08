@@ -240,8 +240,11 @@
   }
 }
 
-/* Mobile devices */
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
+  .candle {
+    width: 50px; 
+    height: auto;
+  }
   .header {
     font-size: 16px;
     text-align: center;
@@ -253,9 +256,29 @@
     width: 100%;
     margin-bottom: 15px;
   }
+  nav { display: none; } /* Move this inside */
+  header { flex-wrap: wrap; justify-content: space-between; }
+  header > .brand { width: 100%; margin-bottom: 1rem; }
+  .features { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 1rem; }
+  .footer-grid > div { justify-self: center !important; text-align: center !important; }
 }
 
+  .card {
+  background:var(--card);padding:1rem;border-radius:16px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:.75rem;transition:transform .25s, box-shadow .25s;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn .5s forwards;
+}
 
+/* Define .content separately */
+.content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+  
  {
       nav { display: none; }
       header { flex-wrap: wrap; justify-content: space-between; }
@@ -665,13 +688,11 @@
         signupButton.disabled = true;
         signupButton.textContent = 'Sending...';
 
-fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
-    // ...
-});
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: pendingUser.email })
-        })
+      fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: pendingUser.email })
+})
         .then(response => {
             if (!response.ok) { throw new Error('Network response was not ok'); }
             return response.json();
@@ -703,7 +724,7 @@ fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
 
         const userData = { ...pendingUser, otp };
 
-        fetch('https://localhost:3001/api/signup-verify', {
+        fetch('https://jovial-flames-api.onrender.com/api/signup-verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -757,7 +778,7 @@ fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
           forgotButton.disabled = true;
           forgotButton.textContent = 'Sending...';
 
-          fetch('https://localhost:3001/api/forgot-password-request-otp', {
+          fetch('https://jovial-flames-api.onrender.com/api/forgot-password-request-otp', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email })
