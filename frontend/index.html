@@ -9,6 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
+    img {
+  max-width: 100%;
+  height: auto;
+}
+
     :root{
       --bg:#fff8f4;
       --card:#ffffff;
@@ -37,6 +42,10 @@
       margin:0 auto;
       padding:2rem 0;
     }
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
 
     header{
       display:flex;
@@ -95,6 +104,16 @@
       opacity: 0;
       transform: translateY(20px);
       animation: fadeIn .5s forwards;
+      .content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card {
+  flex: 1 1 300px; /* grow, shrink, min width 300px */
+}
+
     }
     @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
     .card:hover{transform:translateY(-8px); box-shadow: var(--shadow-hover);}
@@ -206,6 +225,38 @@
     }
 
     @media (max-width: 768px) {
+  .candle {
+    width: 50px; 
+    height: auto;
+  }
+    }
+  /* Tablets and below */
+@media screen and (max-width: 1024px) {
+  .header {
+    font-size: 20px;
+  }
+  .nav-menu {
+    display: block; /* stack menu vertically */
+  }
+}
+
+/* Mobile devices */
+@media screen and (max-width: 768px) {
+  .header {
+    font-size: 16px;
+    text-align: center;
+  }
+  .content {
+    flex-direction: column;
+  }
+  .card {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+
+ {
       nav { display: none; }
       header { flex-wrap: wrap; justify-content: space-between; }
       header > .brand { width: 100%; margin-bottom: 1rem; }
@@ -301,43 +352,43 @@
             <div class="products">
                 <article class="card"><div class="img"><img src="images/mini-bubble.jpg" alt="Mini-Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Mini-Bubble</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Mini-Bubble', 45)">Add to Cart</button></article>
                 <article class="card"><div class="img"><img src="images/big-standing-bubble.jpg" alt="Big Standing Bubble Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Big Bubble</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Big Bubble', 75)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/vintage-lady.jpg" alt="Vintage Lady" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Vintage Lady</div><div class="muted">48 Hrs Burn Time</div></div><div class="price">Rs. 199</div></div><button class="btn" onclick="addToCart(this, 'Vintage Lady', 199)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/banding-bubble.jpg" alt="Banding Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Banding Bubble</div><div class="muted">18 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Banding Bubble', 65)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/family-bear.jpg" alt="Family Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Family Bear</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 151</div></div><button class="btn" onclick="addToCart(this, 'Family Bear', 151)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/vintage-lady.jpg" alt="Vintage Lady" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Vintage Lady</div><div class="muted">48 Hrs Burn Time</div></div><div class="price">Rs. 199</div></div><button class="btn" onclick="addToCart(this, 'Vintage Lady', 199)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/banding-bubble.jpg" alt="Banding Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Banding Bubble</div><div class="muted">18 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Banding Bubble', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/family-bear.jpg" alt="Family Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Family Bear</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 151</div></div><button class="btn" onclick="addToCart(this, 'Family Bear', 151)">Add to Cart</button></article>
                 <article class="card"><div class="img"><img src="images/teddy-bear.jpg" alt="Teddy Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Teddy Bear</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Teddy Bear', 51)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/s-candle.jpg" alt="S-Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">S-Candle</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 25</div></div><button class="btn" onclick="addToCart(this, 'S-Candle', 25)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/abstract-face.jpg" alt="Abstract Face" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Abstract Face</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Abstract Face', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/korean-love-sign.jpg" alt="Korean Love Sign" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Korean Love Sign</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Korean Love Sign', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/s-candle.jpg" alt="S-Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">S-Candle</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 25</div></div><button class="btn" onclick="addToCart(this, 'S-Candle', 25)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/abstract-face.jpg" alt="Abstract Face" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Abstract Face</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Abstract Face', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/korean-love-sign.jpg" alt="Korean Love Sign" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Korean Love Sign</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Korean Love Sign', 18)">Add to Cart</button></article>
             </div>
     
             <h3>Pillar Candles</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/rosy-pillar.jpg" alt="Rosy Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Pillar</div><div class="muted">16 Hrs Burn Time</div></div><div class="price">Rs. 91</div></div><button class="btn" onclick="addToCart(this, 'Rosy Pillar', 91)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/crafted-pillar.jpg" alt="Crafted Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Pillar</div><div class="muted">Soya Wax</div></div><div class="price">Rs. 111</div></div><button class="btn" onclick="addToCart(this, 'Crafted Pillar', 111)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/circular-pillar.jpg" alt="Circular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Circular Pillar</div><div class="muted">10 Hrs Burn Time</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Circular Pillar', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/love-pillar.jpg" alt="Love Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Love Pillar</div><div class="muted">Heart Shaped</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Love Pillar', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/rosy-semi-pillar.jpg" alt="Rosy Semi Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Semi Pillar</div><div class="muted">8 Hrs Burn Time</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Rosy Semi Pillar', 45)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/lace-pillar.jpg" alt="Lace Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lace Pillar</div><div class="muted">12 Hrs Burn Time</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Lace Pillar', 60)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/rectangular-pillar.jpg" alt="Rectangular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rectangular Pillar</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Rectangular Pillar', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rosy-pillar.jpg" alt="Rosy Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Pillar</div><div class="muted">16 Hrs Burn Time</div></div><div class="price">Rs. 91</div></div><button class="btn" onclick="addToCart(this, 'Rosy Pillar', 91)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/crafted-pillar.jpg" alt="Crafted Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Pillar</div><div class="muted">Soya Wax</div></div><div class="price">Rs. 111</div></div><button class="btn" onclick="addToCart(this, 'Crafted Pillar', 111)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/circular-pillar.jpg" alt="Circular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Circular Pillar</div><div class="muted">10 Hrs Burn Time</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Circular Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/love-pillar.jpg" alt="Love Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Love Pillar</div><div class="muted">Heart Shaped</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Love Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rosy-semi-pillar.jpg" alt="Rosy Semi Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Semi Pillar</div><div class="muted">8 Hrs Burn Time</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Rosy Semi Pillar', 45)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/lace-pillar.jpg" alt="Lace Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lace Pillar</div><div class="muted">12 Hrs Burn Time</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Lace Pillar', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rectangular-pillar.jpg" alt="Rectangular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rectangular Pillar</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Rectangular Pillar', 65)">Add to Cart</button></article>
             </div>
     
             <h3>Floral Collection</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/peony-flower.jpg" alt="Peony Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Peony Flower</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 90</div></div><button class="btn" onclick="addToCart(this, 'Peony Flower', 90)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/lotus-candle.jpg" alt="Lotus" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lotus Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Lotus Candle', 51)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/sun-flower.jpg" alt="Sun Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Sun Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Sun Flower', 60)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/nut-flower.jpg" alt="Nut Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Nut Flower</div><div class="muted">15 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Nut Flower', 65)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/blossom-flower.jpg" alt="Blossom Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Blossom Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Blossom Flower', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/basket.jpg" alt="Basket Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Basket Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Basket Candle', 75)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/heart-linear.jpg" alt="Heart Linear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Heart Linear</div><div class="muted">Parafin wax</div></div><div class="price">Rs. 21</div></div><button class="btn" onclick="addToCart(this, 'Heart Linear', 21)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/peony-flower.jpg" alt="Peony Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Peony Flower</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 90</div></div><button class="btn" onclick="addToCart(this, 'Peony Flower', 90)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/lotus-candle.jpg" alt="Lotus" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lotus Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Lotus Candle', 51)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/sun-flower.jpg" alt="Sun Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Sun Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Sun Flower', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/nut-flower.jpg" alt="Nut Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Nut Flower</div><div class="muted">15 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Nut Flower', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/blossom-flower.jpg" alt="Blossom Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Blossom Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Blossom Flower', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/basket.jpg" alt="Basket Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Basket Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Basket Candle', 75)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/heart-linear.jpg" alt="Heart Linear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Heart Linear</div><div class="muted">Parafin wax</div></div><div class="price">Rs. 21</div></div><button class="btn" onclick="addToCart(this, 'Heart Linear', 21)">Add to Cart</button></article>
             </div>
             
             <h3>Sweet Treats Collection</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/ladoo-candle.jpg" alt="Ladoo" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Ladoo Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Ladoo Candle', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/kaju-katli-candle.jpg" alt="Kaju Katli" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Kaju Katli Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Kaju Katli Candle', 15)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/gujiya-candle.jpg" alt="Gujiya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Gujiya Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Gujiya Candle', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/imarti-candle.jpg" alt="Imarti" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Imarti Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Imarti Candle', 15)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/ladoo-candle.jpg" alt="Ladoo" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Ladoo Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Ladoo Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/kaju-katli-candle.jpg" alt="Kaju Katli" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Kaju Katli Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Kaju Katli Candle', 15)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/gujiya-candle.jpg" alt="Gujiya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Gujiya Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Gujiya Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/imarti-candle.jpg" alt="Imarti" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Imarti Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Imarti Candle', 15)">Add to Cart</button></article>
             </div>
             
             <h3>Jars, Hampers & Essentials</h3>
@@ -614,7 +665,9 @@
         signupButton.disabled = true;
         signupButton.textContent = 'Sending...';
 
-        fetch('http://localhost:3001/api/signup-request-otp', {
+fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
+    // ...
+});
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: pendingUser.email })
@@ -650,7 +703,7 @@
 
         const userData = { ...pendingUser, otp };
 
-        fetch('http://localhost:3001/api/signup-verify', {
+        fetch('https://localhost:3001/api/signup-verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -704,7 +757,7 @@
           forgotButton.disabled = true;
           forgotButton.textContent = 'Sending...';
 
-          fetch('http://localhost:3001/api/forgot-password-request-otp', {
+          fetch('https://localhost:3001/api/forgot-password-request-otp', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email })
