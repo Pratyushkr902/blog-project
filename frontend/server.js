@@ -16,10 +16,8 @@ app.get('/', (req, res) => {
   res.send('Welcome to Jovial Flames API! 🎉 Server is running.');
 });
 
-const PORT = process.env.PORT || 3001;
-
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 // server.js -> The CORRECT way
 
