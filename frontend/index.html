@@ -497,7 +497,7 @@
             <h2>Verify Your Email</h2>
             <p class="muted" style="text-align: center; font-size: 0.9em;">An OTP has been sent to <strong id="otp-email-display"></strong>. Please enter it below.</p>
             <form id="verify-form">
-                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required /></div>
+                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required placeholder="e.g. 123456" /></div>
                 <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Verify & Sign Up</button>
             </form>
           </div>
@@ -516,7 +516,7 @@
             <h2>Reset Password</h2>
             <p class="muted" style="text-align: center; font-size: 0.9em;">Enter the OTP from your email and your new password.</p>
             <form id="reset-form">
-                <div class="form-group"><label for="reset-otp">OTP Code</label><input type="text" id="reset-otp" class="news-input" required /></div>
+                <div class="form-group"><label for="reset-otp">OTP Code</label><input type="text" id="reset-otp" class="news-input" required placeholder="e.g. 123456" /></div>
                 <div class="form-group"><label for="reset-password">New Password</label><input type="password" id="reset-password" class="news-input" minlength="6" required /></div>
                 <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Reset Password</button>
             </form>
@@ -617,8 +617,7 @@
       const showToast = (message, isError = false) => {
         const toast = getElement("toast");
         toast.textContent = message;
-        toast.className = isError ? "error" : "success";
-        toast.classList.add("show");
+        toast.className = isError ? "error show" : "success show";
         setTimeout(() => toast.classList.remove("show"), 3000);
       };
 
@@ -663,7 +662,7 @@
           userButtons.style.display = "flex";
           userGreeting.textContent = `Hello, ${user.name.split(' ')[0]}!`;
         } else {
-          authButtons.style.display = "flex";
+          authButtons.style.display = "grid"; // Use grid for small screens
           userButtons.style.display = "none";
           userGreeting.textContent = "";
         }
@@ -674,232 +673,145 @@
         updateUserUI(loggedInUser);
       };
 
-     
+      getElement('signup-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const signupButton = e.target.querySelector('button');
+        const userEmail = getElement('signup-email').value.trim();
+        const userExists = mockUsers.find(u => u.email === userEmail);
 
-      
-  // -------------------------------
-  // Config
-  // -------------------------------
-  const API_URL = "https://api.jovialflames.com"; // Backend server URL
-  let pendingUser = null;
-  let emailToReset = null;
-  const mockUsers = JSON.parse(localStorage.getItem('mockUsers')) || [];
-
-  // -------------------------------
-  // Helper Functions
-  // -------------------------------
-  const getElement = (id) => document.getElementById(id);
-
-  const showToast = (message, isError = false) => {
-    // Replace with your UI toast implementation
-    alert(message);
-    console[isError ? 'error' : 'log'](message);
-  };
-
-  const saveUsers = () => localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
-
-  const updateUserUI = (user) => {
-    // Update your UI to show logged-in user
-    console.log('Update UI for user:', user);
-  };
-
-  const closeAuthModal = () => {
-    // Close your auth modal
-    console.log('Closing auth modal...');
-  };
-
-  const updateAuthModalView = (view) => {
-    // Switch modal views: 'verify', 'reset', 'login', etc.
-    console.log('Switch modal view to:', view);
-  };
-
-  // -------------------------------
-  // Signup Flow
-  // -------------------------------
-  getElement('signup-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const userEmail = getElement('signup-email').value.trim();
-    const signupButton = e.target.querySelector('button');
-
-    signupButton.disabled = true;
-    signupButton.textContent = 'Creating...';
-
-    pendingUser = {
-      name: getElement('signup-name').value.trim(),
-      email: userEmail,
-      password: getElement('signup-password').value
-    };
-
-    fetch(`${API_URL}/api/signup-request-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail })
-    })
-      .then(res => res.json())
-      .then(data => {
-        showToast(data.message);
-        if (data.message.includes("sent successfully")) {
-          getElement('otp-email-display').textContent = userEmail;
-          updateAuthModalView('verify');
+        if (userExists) {
+            return showToast("An account with this email already exists.", true);
         }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        showToast('Failed to connect to the server.', true);
-      })
-      .finally(() => {
-        signupButton.disabled = false;
-        signupButton.textContent = 'Create Account';
+
+        signupButton.disabled = true;
+        signupButton.textContent = 'Creating...';
+        
+        pendingUser = {
+            name: getElement('signup-name').value.trim(),
+            email: userEmail,
+            password: getElement('signup-password').value
+        };
+
+        // Simulate sending OTP
+        setTimeout(() => {
+            showToast(`OTP sent to ${userEmail}`);
+            getElement('otp-email-display').textContent = userEmail;
+            updateAuthModalView('verify');
+            signupButton.disabled = false;
+            signupButton.textContent = 'Create Account';
+        }, 1000);
       });
-  });
 
-  // -------------------------------
-  // Verification Flow
-  // -------------------------------
-  getElement('verify-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const otp = getElement('verify-otp').value;
-    const verifyButton = e.target.querySelector('button');
+      getElement('verify-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const verifyButton = e.target.querySelector('button');
+          const otp = getElement('verify-otp').value;
 
-    verifyButton.disabled = true;
-    verifyButton.textContent = 'Verifying...';
-
-    fetch(`${API_URL}/api/signup-verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...pendingUser, otp })
-    })
-      .then(res => res.json())
-      .then(data => {
-        showToast(data.message, data.message !== "User created successfully.");
-        if (data.message === "User created successfully.") {
-          mockUsers.push(pendingUser);
-          saveUsers();
-          localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
-          closeAuthModal();
-          updateUserUI(pendingUser);
-          pendingUser = null;
-        }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        showToast('Failed to connect to the server.', true);
-      })
-      .finally(() => {
-        verifyButton.disabled = false;
-        verifyButton.textContent = 'Verify & Sign Up';
-      });
-  });
-
-  // -------------------------------
-  // Login Flow
-  // -------------------------------
-  getElement('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = getElement('login-email').value.trim();
-    const password = getElement('login-password').value;
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-
-    if (user) {
-      localStorage.setItem('loggedInUser', JSON.stringify(user));
-      showToast("Logged in successfully!");
-      closeAuthModal();
-      updateUserUI(user);
-    } else {
-      showToast("Invalid email or password.", true);
-    }
-  });
-
-  // -------------------------------
-  // Forgot Password Flow
-  // -------------------------------
-  getElement('forgot-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = getElement('forgot-email').value.trim();
-    emailToReset = email;
-    const forgotButton = e.target.querySelector('button');
-
-    forgotButton.disabled = true;
-    forgotButton.textContent = 'Sending...';
-
-    fetch(`${API_URL}/api/forgot-password-request-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    })
-      .then(res => res.json())
-      .then(data => {
-        showToast(data.message);
-        updateAuthModalView('reset');
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        showToast('Failed to connect to the server.', true);
-      })
-      .finally(() => {
-        forgotButton.disabled = false;
-        forgotButton.textContent = 'Send OTP';
-      });
-  });
-
-  // -------------------------------
-  // Reset Password Flow
-  // -------------------------------
-  getElement('reset-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const otp = getElement('reset-otp').value;
-    const newPassword = getElement('reset-password').value;
-
-    if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
-
-    const resetButton = e.target.querySelector('button');
-    resetButton.disabled = true;
-    resetButton.textContent = 'Resetting...';
-
-    fetch(`${API_URL}/api/reset-password-verify-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailToReset, otp, newPassword })
-    })
-      .then(res => res.json())
-      .then(data => {
-        showToast(data.message);
-        if (data.message === "Password has been reset successfully.") {
-          const idx = mockUsers.findIndex(u => u.email === emailToReset);
-          if (idx !== -1) {
-            mockUsers[idx].password = newPassword;
-            saveUsers();
+          // Simulate OTP check. In a real app, this would be a server call.
+          // For this mock, any non-empty OTP is fine.
+          if (!otp) {
+              return showToast("Please enter the OTP.", true);
           }
-          emailToReset = null;
-          updateAuthModalView('login');
-        }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        showToast('Failed to connect to the server.', true);
-      })
-      .finally(() => {
-        resetButton.disabled = false;
-        resetButton.textContent = 'Reset Password';
+          
+          verifyButton.disabled = true;
+          verifyButton.textContent = 'Verifying...';
+
+          setTimeout(() => {
+              showToast("Account created successfully!");
+              mockUsers.push(pendingUser);
+              saveUsers();
+              localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
+              updateUserUI(pendingUser);
+              closeAuthModal();
+              pendingUser = null;
+              verifyButton.disabled = false;
+              verifyButton.textContent = 'Verify & Sign Up';
+          }, 1000);
       });
-  });
 
-  // -------------------------------
-  // Logout
-  // -------------------------------
-  window.logoutUser = () => {
-    localStorage.removeItem('loggedInUser');
-    showToast("Logged out successfully.");
-    updateUserUI(null);
-  };
+      getElement('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = getElement('login-email').value.trim();
+        const password = getElement('login-password').value;
+        const user = mockUsers.find(u => u.email === email && u.password === password);
 
+        if (user) {
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          showToast("Logged in successfully!");
+          closeAuthModal();
+          updateUserUI(user);
+        } else {
+          showToast("Invalid email or password.", true);
+        }
+      });
 
+      getElement('forgot-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const forgotButton = e.target.querySelector('button');
+          const email = getElement('forgot-email').value.trim();
+          const userExists = mockUsers.find(u => u.email === email);
+          
+          if (!userExists) {
+              return showToast("No account found with this email.", true);
+          }
+
+          emailToReset = email;
+          forgotButton.disabled = true;
+          forgotButton.textContent = 'Sending...';
+
+          setTimeout(() => {
+              showToast(`Password reset OTP sent to ${email}`);
+              updateAuthModalView('reset');
+              forgotButton.disabled = false;
+              forgotButton.textContent = 'Send OTP';
+          }, 1000);
+      });
+
+      getElement('reset-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const resetButton = e.target.querySelector('button');
+          const otp = getElement('reset-otp').value;
+          const newPassword = getElement('reset-password').value;
+          
+          if (!otp) return showToast("Please enter the OTP.", true);
+          if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
+
+          resetButton.disabled = true;
+          resetButton.textContent = 'Resetting...';
+
+          setTimeout(() => {
+              const userIndex = mockUsers.findIndex(u => u.email === emailToReset);
+              if (userIndex !== -1) {
+                  mockUsers[userIndex].password = newPassword;
+                  saveUsers();
+              }
+              showToast("Password has been reset successfully.");
+              emailToReset = null;
+              updateAuthModalView('login');
+              resetButton.disabled = false;
+              resetButton.textContent = 'Reset Password';
+          }, 1000);
+      });
+      
+      window.logoutUser = () => {
+        localStorage.removeItem('loggedInUser');
+        showToast("Logged out successfully.");
+        updateUserUI(null);
+        if(ordersSidebar.classList.contains("open")) {
+            toggleOrders();
+        }
+      };
 
       // --- Order & Tracking Logic ---
       const ordersSidebar = getElement("ordersSidebar");
       const orderList = getElement("orderList");
 
       window.toggleOrders = () => {
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        if (!loggedInUser) {
+          openAuthModal('login');
+          return showToast("Please log in to view your orders.", true);
+        }
         ordersSidebar.classList.toggle("open");
         if (ordersSidebar.classList.contains("open")) { renderOrders(); }
       };
@@ -934,8 +846,8 @@
             const isCompleted = index < currentStatusIndex;
             const isActive = index === currentStatusIndex;
             let className = '';
-            if (isActive) className = 'active';
             if (isCompleted) className = 'completed';
+            if (isActive) className = 'active completed'; // Mark active as completed too
 
             timelineHTML += `<li class="${className}">
                 <div class="status">${status}</div>
@@ -972,10 +884,13 @@
             if(trackingModal.style.display === 'grid' && getElement('tracking-order-id').textContent === orderId) {
                 showTrackingDetails(orderId);
             }
+            if (ordersSidebar.classList.contains('open')) {
+                renderOrders();
+            }
             
             showToast(`Order #${orderId} is now: ${statuses[statusIndex]}`);
             statusIndex++;
-          }, 10000);
+          }, 10000); // Update every 10 seconds
       };
 
       const renderOrders = () => {
@@ -985,10 +900,11 @@
           return;
         }
         orderList.innerHTML = [...loggedInUser.orders].reverse().map(order => {
-          return `<div class="order-item">
+          return `<div class="order-item" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
               <div>
                 <strong>Order: #${order.id}</strong>
                 <div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div>
+                <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
                 <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total Paid: Rs. ${order.grandTotal}</div>
               </div>
               <button class="btn secondary" style="padding: 0.4rem 0.8rem;" onclick="showTrackingDetails('${order.id}')">Track</button>
