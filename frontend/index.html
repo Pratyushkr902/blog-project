@@ -688,7 +688,7 @@
         signupButton.disabled = true;
         signupButton.textContent = 'Sending...';
 
-      fetch('https://jovial-flames-api.onrender.com/api/signup-request-otp', {
+       fetch("https://api.jovialflames.com/api/signup-request-otp", { 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: pendingUser.email })
@@ -724,7 +724,7 @@
 
         const userData = { ...pendingUser, otp };
 
-        fetch('https://jovial-flames-api.onrender.com/api/signup-verify', {
+        fetch('https://api.jovialflames.com/api/signup-verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -778,7 +778,7 @@
           forgotButton.disabled = true;
           forgotButton.textContent = 'Sending...';
 
-          fetch('https://jovial-flames-api.onrender.com/api/forgot-password-request-otp', {
+          fetch('https://api.jovialflames.com/api/forgot-password-request-otp', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email })
@@ -809,11 +809,12 @@
           resetButton.disabled = true;
           resetButton.textContent = 'Resetting...';
 
-          fetch('https://localhost:3001/api/reset-password-verify-otp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: emailToReset, otp, newPassword })
-          })
+          fetch(`${process.env.REACT_APP_API_URL}/api/reset-password-verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: emailToReset, otp, newPassword })
+})
+
           .then(response => response.json())
           .then(data => {
               showToast(data.message);
