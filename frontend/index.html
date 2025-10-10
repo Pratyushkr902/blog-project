@@ -809,7 +809,7 @@
           resetButton.disabled = true;
           resetButton.textContent = 'Resetting...';
 
-          fetch('http://localhost:3001/api/reset-password-verify-otp', {
+          fetch('https://localhost:3001/api/reset-password-verify-otp', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: emailToReset, otp, newPassword })
