@@ -691,7 +691,7 @@
        fetch("https://api.jovialflames.com/api/signup-request-otp", { 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: pendingUser.email })
+    body: JSON.stringify({ email: userEmail })
 })
         .then(response => {
             if (!response.ok) { throw new Error('Network response was not ok'); }
