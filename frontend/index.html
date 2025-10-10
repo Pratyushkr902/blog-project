@@ -688,161 +688,224 @@
         signupButton.disabled = true;
         signupButton.textContent = 'Sending...';
 
-       fetch("https://api.jovialflames.com/api/signup-request-otp", { 
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: userEmail })
-})
-        .then(response => {
-            if (!response.ok) { throw new Error('Network response was not ok'); }
-            return response.json();
-        })
-        .then(data => {
-            showToast(data.message);
-            if (data.message.includes("sent successfully")) {
-                getElement('otp-email-display').textContent = email;
-                updateAuthModalView('verify');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Failed to connect to the server. Is it running?', true);
-        })
-        .finally(() => {
-            signupButton.disabled = false;
-            signupButton.textContent = 'Create Account';
-        });
-      });
+       
+  // -------------------------------
+  // Config
+  // -------------------------------
+  const API_URL = "https://api.jovialflames.com"; // Backend server URL
+  let pendingUser = null;
+  let emailToReset = null;
+  const mockUsers = JSON.parse(localStorage.getItem('mockUsers')) || [];
 
-      // Verification Flow
-      getElement('verify-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const otp = getElement('verify-otp').value;
-        const verifyButton = e.target.querySelector('button');
-        verifyButton.disabled = true;
-        verifyButton.textContent = 'Verifying...';
+  // -------------------------------
+  // Helper Functions
+  // -------------------------------
+  const getElement = (id) => document.getElementById(id);
 
-        const userData = { ...pendingUser, otp };
+  const showToast = (message, isError = false) => {
+    // Replace with your UI toast implementation
+    alert(message);
+    console[isError ? 'error' : 'log'](message);
+  };
 
-        fetch('https://api.jovialflames.com/api/signup-verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === "User created successfully.") {
-                showToast(data.message, false);
-                mockUsers.push(pendingUser);
-                saveUsers();
-                localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
-                closeAuthModal();
-                updateUserUI(pendingUser);
-                pendingUser = null;
-            } else {
-                showToast(data.message, true);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Failed to connect to the server.', true);
-        })
-        .finally(() => {
-            verifyButton.disabled = false;
-            verifyButton.textContent = 'Verify & Sign Up';
-        });
-      });
-      
-      // Login Flow
-      getElement('login-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = getElement('login-email').value.trim();
-        const password = getElement('login-password').value;
-        const user = mockUsers.find(u => u.email === email && u.password === password);
-        if (user) {
-          localStorage.setItem('loggedInUser', JSON.stringify(user));
-          showToast("Logged in successfully!");
-          closeAuthModal();
-          updateUserUI(user);
-        } else {
-          showToast("Invalid email or password.", true);
+  const saveUsers = () => localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
+
+  const updateUserUI = (user) => {
+    // Update your UI to show logged-in user
+    console.log('Update UI for user:', user);
+  };
+
+  const closeAuthModal = () => {
+    // Close your auth modal
+    console.log('Closing auth modal...');
+  };
+
+  const updateAuthModalView = (view) => {
+    // Switch modal views: 'verify', 'reset', 'login', etc.
+    console.log('Switch modal view to:', view);
+  };
+
+  // -------------------------------
+  // Signup Flow
+  // -------------------------------
+  getElement('signup-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const userEmail = getElement('signup-email').value.trim();
+    const signupButton = e.target.querySelector('button');
+
+    signupButton.disabled = true;
+    signupButton.textContent = 'Creating...';
+
+    pendingUser = {
+      name: getElement('signup-name').value.trim(),
+      email: userEmail,
+      password: getElement('signup-password').value
+    };
+
+    fetch(`${API_URL}/api/signup-request-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail })
+    })
+      .then(res => res.json())
+      .then(data => {
+        showToast(data.message);
+        if (data.message.includes("sent successfully")) {
+          getElement('otp-email-display').textContent = userEmail;
+          updateAuthModalView('verify');
         }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        showToast('Failed to connect to the server.', true);
+      })
+      .finally(() => {
+        signupButton.disabled = false;
+        signupButton.textContent = 'Create Account';
       });
+  });
 
-      // Forgot Password Flow
-      getElement('forgot-form').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const email = getElement('forgot-email').value.trim();
-          emailToReset = email;
-          const forgotButton = e.target.querySelector('button');
-          forgotButton.disabled = true;
-          forgotButton.textContent = 'Sending...';
+  // -------------------------------
+  // Verification Flow
+  // -------------------------------
+  getElement('verify-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const otp = getElement('verify-otp').value;
+    const verifyButton = e.target.querySelector('button');
 
-          fetch('https://api.jovialflames.com/api/forgot-password-request-otp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email })
-          })
-          .then(response => response.json())
-          .then(data => {
-              showToast(data.message);
-              updateAuthModalView('reset');
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              showToast('Failed to connect to the server.', true);
-          })
-          .finally(() => {
-              forgotButton.disabled = false;
-              forgotButton.textContent = 'Send OTP';
-          });
+    verifyButton.disabled = true;
+    verifyButton.textContent = 'Verifying...';
+
+    fetch(`${API_URL}/api/signup-verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...pendingUser, otp })
+    })
+      .then(res => res.json())
+      .then(data => {
+        showToast(data.message, data.message !== "User created successfully.");
+        if (data.message === "User created successfully.") {
+          mockUsers.push(pendingUser);
+          saveUsers();
+          localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
+          closeAuthModal();
+          updateUserUI(pendingUser);
+          pendingUser = null;
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        showToast('Failed to connect to the server.', true);
+      })
+      .finally(() => {
+        verifyButton.disabled = false;
+        verifyButton.textContent = 'Verify & Sign Up';
       });
+  });
 
-      // Reset Password Flow
-      getElement('reset-form').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const otp = getElement('reset-otp').value;
-          const newPassword = getElement('reset-password').value;
-          if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
+  // -------------------------------
+  // Login Flow
+  // -------------------------------
+  getElement('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = getElement('login-email').value.trim();
+    const password = getElement('login-password').value;
+    const user = mockUsers.find(u => u.email === email && u.password === password);
 
-          const resetButton = e.target.querySelector('button');
-          resetButton.disabled = true;
-          resetButton.textContent = 'Resetting...';
+    if (user) {
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+      showToast("Logged in successfully!");
+      closeAuthModal();
+      updateUserUI(user);
+    } else {
+      showToast("Invalid email or password.", true);
+    }
+  });
 
-          fetch(`${process.env.REACT_APP_API_URL}/api/reset-password-verify-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: emailToReset, otp, newPassword })
-})
+  // -------------------------------
+  // Forgot Password Flow
+  // -------------------------------
+  getElement('forgot-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = getElement('forgot-email').value.trim();
+    emailToReset = email;
+    const forgotButton = e.target.querySelector('button');
 
-          .then(response => response.json())
-          .then(data => {
-              showToast(data.message);
-              if (data.message === "Password has been reset successfully.") {
-                  const userIndex = mockUsers.findIndex(u => u.email === emailToReset);
-                  if (userIndex !== -1) {
-                      mockUsers[userIndex].password = newPassword;
-                      saveUsers();
-                  }
-                  emailToReset = null;
-                  updateAuthModalView('login');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              showToast('Failed to connect to the server.', true);
-          })
-          .finally(() => {
-              resetButton.disabled = false;
-              resetButton.textContent = 'Reset Password';
-          });
+    forgotButton.disabled = true;
+    forgotButton.textContent = 'Sending...';
+
+    fetch(`${API_URL}/api/forgot-password-request-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+      .then(res => res.json())
+      .then(data => {
+        showToast(data.message);
+        updateAuthModalView('reset');
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        showToast('Failed to connect to the server.', true);
+      })
+      .finally(() => {
+        forgotButton.disabled = false;
+        forgotButton.textContent = 'Send OTP';
       });
+  });
 
-      window.logoutUser = () => {
-        localStorage.removeItem('loggedInUser');
-        showToast("Logged out successfully.");
-        updateUserUI(null);
-      };
+  // -------------------------------
+  // Reset Password Flow
+  // -------------------------------
+  getElement('reset-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const otp = getElement('reset-otp').value;
+    const newPassword = getElement('reset-password').value;
+
+    if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
+
+    const resetButton = e.target.querySelector('button');
+    resetButton.disabled = true;
+    resetButton.textContent = 'Resetting...';
+
+    fetch(`${API_URL}/api/reset-password-verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailToReset, otp, newPassword })
+    })
+      .then(res => res.json())
+      .then(data => {
+        showToast(data.message);
+        if (data.message === "Password has been reset successfully.") {
+          const idx = mockUsers.findIndex(u => u.email === emailToReset);
+          if (idx !== -1) {
+            mockUsers[idx].password = newPassword;
+            saveUsers();
+          }
+          emailToReset = null;
+          updateAuthModalView('login');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        showToast('Failed to connect to the server.', true);
+      })
+      .finally(() => {
+        resetButton.disabled = false;
+        resetButton.textContent = 'Reset Password';
+      });
+  });
+
+  // -------------------------------
+  // Logout
+  // -------------------------------
+  window.logoutUser = () => {
+    localStorage.removeItem('loggedInUser');
+    showToast("Logged out successfully.");
+    updateUserUI(null);
+  };
+
+
 
       // --- Order & Tracking Logic ---
       const ordersSidebar = getElement("ordersSidebar");
