@@ -674,21 +674,9 @@
         updateUserUI(loggedInUser);
       };
 
-      // Signup Flow
-      getElement('signup-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = getElement('signup-name').value.trim();
-        const email = getElement('signup-email').value.trim();
-        const password = getElement('signup-password').value;
-        if (password.length < 6) return showToast("Password must be at least 6 characters.", true);
-        if (mockUsers.some(user => user.email === email)) return showToast("This email is already registered.", true);
-        
-        pendingUser = { name, email, password, orders: [] };
-        const signupButton = e.target.querySelector('button');
-        signupButton.disabled = true;
-        signupButton.textContent = 'Sending...';
+     
 
-       
+      
   // -------------------------------
   // Config
   // -------------------------------
