@@ -19,7 +19,12 @@ app.use((req, res, next) => {
 // --------------------
 // ✅ CORS Configuration
 // --------------------
-const allowedOrigins = ['https://www.jovialflames.com', 'https://jovialflames.com'];
+const allowedOrigins = [
+  'https://www.jovialflames.com',
+  'https://jovialflames.com',
+  'https://jovial-flames-api.onrender.com'  // Add this line
+];
+
 
 app.use(cors({
   origin: function (origin, callback) {
