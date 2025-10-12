@@ -985,54 +985,86 @@
       window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
       window.toggleCart = () => cartSidebar.classList.toggle("open");
 
-      window.placeOrder = (paymentMethod) => {
+     // Replace your existing placeOrder function in index.html with this one.
+
+    window.placeOrder = async (paymentMethod) => {
         const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
         if (!loggedInUser) {
-          toggleCart();
-          openAuthModal('login');
-          return showToast("Please log in to place an order.", true);
+            toggleCart(); openAuthModal('login');
+            return showToast("Please log in to place an order.", true);
         }
 
-        const name = getElement("custName").value.trim(), phone = getElement("custPhone").value.trim(), address = getElement("custAddr").value.trim(), pincode = getElement("custPin").value.trim();
+        const name = getElement("custName").value.trim();
+        const phone = getElement("custPhone").value.trim();
+        const address = getElement("custAddr").value.trim();
+        const pincode = getElement("custPin").value.trim();
         if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
-        
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        if (subtotal < MIN_ORDER_VALUE) return showToast(`Minimum order of Rs. ${MIN_ORDER_VALUE} is required.`, true);
 
-        const shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
-        const grandTotal = subtotal + shippingCharges;
-        
-        const orderId = `JF-${Date.now().toString().slice(-6)}`;
-        const newOrder = { 
-            id: orderId, 
-            date: new Date().toLocaleDateString(), 
-            items: [...cart], 
-            grandTotal, 
-            paymentMethod,
-            status: "Order Placed",
-            lastUpdate: Date.now()
-        };
-        
+        const button = event.target;
+
+        if (paymentMethod === 'cod') {
+            await placeFinalOrderOnServer('cod', button);
+            return;
+        }
+
         if (paymentMethod === 'online') {
-            return showToast("Online payment is not yet available. Please choose Pay on Delivery.", true);
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const grandTotal = subtotal + ((subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0);
+            
+            try {
+                // Step 1: Create a Razorpay order on your backend
+                const orderData = await apiCall('/api/payment/create-order', { amount: grandTotal }, button);
+                
+                // Step 2: Configure Razorpay options
+                const options = {
+                    key: RAZORPAY_KEY_ID,
+                    amount: orderData.amount,
+                    currency: "INR",
+                    name: "Jovial Flames",
+                    description: "Candle Purchase",
+                    order_id: orderData.id,
+                    
+                    // THIS IS THE HANDLER FUNCTION - IT RUNS AFTER A SUCCESSFUL PAYMENT
+                    handler: async function (response) {
+                        console.log("Razorpay handler has started! Payment was successful on Razorpay's end.");
+                        console.log("Razorpay Response Data:", response);
+
+                        try {
+                            // Step 3: Verify the payment on your backend
+                            await apiCall('/api/payment/verify', {
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            });
+
+                            // Step 4: If verification is successful, place the final order
+                            await placeFinalOrderOnServer('online', button);
+
+                        } catch(error) { 
+                            showToast("Payment verification failed. Please contact support.", true); 
+                        }
+                    },
+                    
+                    prefill: { 
+                        name: loggedInUser.name, 
+                        email: loggedInUser.email, 
+                        contact: phone 
+                    },
+                    theme: { color: "#d97706" }
+                };
+
+                // Step 5: Open the Razorpay payment window
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response){ 
+                    showToast('Payment failed: ' + response.error.description, true); 
+                });
+                rzp.open();
+
+            } catch(error) { 
+                /* Error creating Razorpay order is handled by apiCall */ 
+            }
         }
-        
-        const userIndex = mockUsers.findIndex(u => u.email === loggedInUser.email);
-        if (userIndex !== -1) {
-            if (!mockUsers[userIndex].orders) mockUsers[userIndex].orders = [];
-            mockUsers[userIndex].orders.push(newOrder);
-            saveUsers();
-            localStorage.setItem('loggedInUser', JSON.stringify(mockUsers[userIndex]));
-        }
-        showToast(`Thank you, ${name.split(' ')[0]}! Your order #${orderId} is placed.`);
-        cart.length = 0;
-        saveCart();
-        renderCart();
-        ['custName', 'custPhone', 'custAddr', 'custPin'].forEach(id => getElement(id).value = "");
-        toggleCart();
-        
-        simulateTrackingUpdate(orderId);
-      };
+    };
 
       // --- Initial Load ---
       const loadDarkMode = () => {
@@ -1050,6 +1082,7 @@
 
 
 document.addEventListener('DOMContentLoaded', () => {
+  
     // --- CONFIGURATION ---
     const API_URL = 'http://localhost:3001';
     const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; 
