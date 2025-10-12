@@ -1046,5 +1046,85 @@
       loadCart();
       checkAuthState();
     });
+    // Replace the entire <script> tag in index.html with this
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CONFIGURATION ---
+    const API_URL = 'http://localhost:3001';
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; 
+
+    const productListContainer = getElement('product-list');
+    const searchInput = getElement('searchInput');
+
+    // --- PRODUCT RENDERING ---
+    const renderProducts = (products) => {
+        if (!products || products.length === 0) {
+            productListContainer.innerHTML = `<p class="muted" style="text-align:center;">No products found.</p>`;
+            return;
+        }
+        
+        productListContainer.innerHTML = products.map(product => `
+            <article class="card">
+                <div class="img"><img src="${product.imageUrl}" alt="${product.name}" loading="lazy"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-weight:800">${product.name}</div>
+                        <div class="muted">${product.description || ''}</div>
+                    </div>
+                    <div class="price">Rs. ${product.price}</div>
+                </div>
+                <button class="btn" onclick="addToCart(this, '${product.name}', ${product.price})">Add to Cart</button>
+            </article>
+        `).join('');
+    };
+
+    // --- API CALLS for PRODUCTS ---
+    const fetchAllProducts = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/products`);
+            const products = await response.json();
+            renderProducts(products);
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+            productListContainer.innerHTML = `<p class="muted" style="text-align:center; color: red;">Could not load products.</p>`;
+        }
+    };
+
+    const searchProducts = async (searchTerm) => {
+        try {
+            const response = await fetch(`${API_URL}/api/products/search?q=${searchTerm}`);
+            const products = await response.json();
+            renderProducts(products);
+        } catch (error) {
+            console.error("Failed to search products:", error);
+        }
+    };
+
+    // --- EVENT LISTENER for SEARCH ---
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const searchTerm = searchInput.value.trim();
+        
+        // Use a timeout to prevent API calls on every single keystroke
+        searchTimeout = setTimeout(() => {
+            if (searchTerm) {
+                searchProducts(searchTerm);
+            } else {
+                fetchAllProducts(); // If search is cleared, show all products
+            }
+        }, 300); // 300ms delay
+    });
+
+    // --- INITIAL LOAD ---
+    fetchAllProducts();
+    
+    // --- [PREVIOUS SCRIPT CODE: Auth, Cart, Modals, etc.] ---
+    // (All of your existing JavaScript for login, cart, etc. goes here, unchanged)
+    const getElement = id => document.getElementById(id);
+    // ... paste the rest of your previous, working JavaScript here ...
+});
+
 </script>
 </html>
