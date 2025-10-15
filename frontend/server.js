@@ -29,7 +29,12 @@ const OrderSchema = new mongoose.Schema({
     grandTotal: { type: Number, required: true },
     paymentMethod: { type: String, required: true },
     status: { type: String, default: 'Order Placed' },
-    lastUpdate: { type: Date, default: Date.now }
+    lastUpdate: { type: Date, default: Date.now },
+    // ADD THESE NEW FIELDS
+    customerName: { type: String, required: true },
+    customerPhone: { type: String, required: true },
+    deliveryAddress: { type: String, required: true },
+    pincode: { type: String, required: true }
 });
 
 const ProductSchema = new mongoose.Schema({
