@@ -840,33 +840,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. ORDER & PAYMENT LOGIC ---
     const ordersSidebar = getElement("ordersSidebar");
     const orderList = getElement("orderList");
-    const placeFinalOrderOnServer = async (paymentMethod) => {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const grandTotal = subtotal + ((subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0);
-        const orderDetails = { id: 'JF' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('en-IN'), items: cart, grandTotal: grandTotal, paymentMethod: paymentMethod, status: 'Order Placed' };
-        try {
-            await apiCall('/api/order/place', { orderDetails });
-            showToast(`Order #${orderDetails.id} placed successfully!`);
-            cart = [];
-            saveCart();
-            renderCart();
-            toggleCart();
-        } catch (error) { console.error("Failed to place final order:", error); }
-    };
+// --- Replace your old function with this corrected one ---
+
+const placeFinalOrderOnServer = async (paymentMethod, button) => {
+    const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
     
-    window.placeOrder = async (paymentMethod) => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
-        const name = getElement("custName").value.trim();
-        const phone = getElement("custPhone").value.trim();
-        const address = getElement("custAddr").value.trim();
-        const pincode = getElement("custPin").value.trim();
-        if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
-        const button = event.target;
-        if (paymentMethod === 'cod') {
-            await placeFinalOrderOnServer('cod');
-            return;
-        }
+    // 1. GET THE ADDRESS DETAILS FROM THE FORM
+    const customerName = getElement("custName").value.trim();
+    const customerPhone = getElement("custPhone").value.trim();
+    const deliveryAddress = getElement("custAddr").value.trim();
+    const pincode = getElement("custPin").value.trim();
+
+    // 2. CREATE THE COMPLETE ORDER OBJECT
+    const orderDetails = {
+        id: 'JF' + Date.now().toString().slice(-6),
+        date: new Date().toLocaleDateString('en-IN'),
+        items: cart,
+        grandTotal: grandTotal,
+        paymentMethod: paymentMethod,
+        status: 'Order Placed',
+        // 3. INCLUDE THE NEW ADDRESS FIELDS
+        customerName: customerName,
+        customerPhone: customerPhone,
+        deliveryAddress: deliveryAddress,
+        pincode: pincode
+    };
+
+    try {
+        await apiCall('/api/order/place', { orderDetails }, button);
+        showToast(`Order #${orderDetails.id} placed successfully!`);
+        cart = [];
+        saveCart();
+        renderCart();
+        toggleCart();
+    } catch (error) {
+        console.error("Failed to place final order:", error);
+    }
+};
+
+// Also, update the placeOrder function to pass the button correctly
+window.placeOrder = async (paymentMethod) => {
+    const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+    if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
+    const name = getElement("custName").value.trim();
+    const phone = getElement("custPhone").value.trim();
+    const address = getElement("custAddr").value.trim();
+    const pincode = getElement("custPin").value.trim();
+    if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
+    
+    const button = event.target; // Get the button that was clicked
+
+    if (paymentMethod === 'cod') {
+        await placeFinalOrderOnServer('cod', button); // Pass the button here
+        return;
+    }
         if (paymentMethod === 'online') {
             const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
             try {
