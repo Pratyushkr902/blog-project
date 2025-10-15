@@ -267,6 +267,7 @@ app.post('/api/payment/verify', (req, res) => {
 
 
 // Place Order (PROTECTED - only logged-in users can do this)
+// This is the corrected code
 app.post('/api/order/place', authenticateToken, async (req, res) => {
     const { orderDetails } = req.body;
     try {
@@ -278,6 +279,8 @@ app.post('/api/order/place', authenticateToken, async (req, res) => {
         
         res.status(201).json({ message: `Order #${orderDetails.id} has been placed.`, order: orderDetails });
     } catch (error) {
+        // ADD THIS LINE TO PRINT THE REAL ERROR
+        console.error("SERVER-SIDE ERROR PLACING ORDER:", error); 
         res.status(500).json({ message: "Error placing order." });
     }
 });
