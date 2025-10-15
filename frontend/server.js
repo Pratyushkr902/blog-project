@@ -13,6 +13,31 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+const allowedOrigins = [
+    'https://www.jovialflames.com', // ⬅️ Your public frontend domain
+    // You can keep local origins for testing, but they should be removed in final production deployment
+    'https://localhost:3000', 
+    'http://localhost:3000'   
+];
+
+const corsOptions = {
+  // Use the dynamic origin check to whitelist only approved domains
+  origin: (origin, callback) => {
+    // Allow requests from the approved list
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS')); // Block unauthorized domains
+    }
+  },
+  // Ensure you allow the necessary methods and headers
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // Needed if you are sending cookies or session info
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+
 
 // --- DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI)
