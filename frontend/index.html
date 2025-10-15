@@ -958,7 +958,49 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCart();
     checkAuthState();
 
-    // (All other minor functions like toggleOrders, trackOrderById, etc. can remain here)
+    // --- Add this code inside your script ---
+
+    const ordersSidebar = getElement("ordersSidebar");
+    const orderList = getElement("orderList");
+
+    window.toggleOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) {
+            openAuthModal('login');
+            return showToast("Please log in to view your orders.", true);
+        }
+        
+        ordersSidebar.classList.toggle("open");
+
+        if (ordersSidebar.classList.contains("open")) {
+            // This part is important: You need to fetch and render the orders
+            // For now, let's just show a placeholder.
+            renderOrders(); 
+        }
+    };
+
+    const renderOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        // The user object from your server contains the orders array
+        if (!user || !user.orders || user.orders.length === 0) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+            return;
+        }
+
+        // Display the orders, newest first
+        orderList.innerHTML = [...user.orders].reverse().map(order => {
+            return `<div class="order-item">
+                <div>
+                    <strong>Order: #${order.id}</strong>
+                    <div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div>
+                    <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
+                    <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    // --- End of code to add ---
 });
 </script>
 </html>
