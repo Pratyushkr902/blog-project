@@ -310,7 +310,7 @@
   <div class="container">
     <header>
       <a class="brand" href="#">
-        <div class="logo" aria-hidden><img src="images/jovial-flames-logo.png" alt="Jovial Flames Logo" width="26"></div>
+        <div class="logo" aria-hidden><img src="/images/jovial-flames-logo.png" alt="Jovial Flames Logo" width="26"></div>
         <div>
           <div style="font-weight:800">Jovial Flames</div>
           <div style="font-size:.85rem;color:var(--muted)">Premium Handcrafted Candles</div>
@@ -605,20 +605,12 @@
   <div id="toast"></div>
 
 </body>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
     const API_URL = 'http://localhost:3001';
-     const showTrackingDetails = (orderId) => {
-        // ...
-        openTrackingModal();
-    };
-
-});
-    // IMPORTANT: This should be your REAL Razorpay Key ID for testing/production
-    const  RAZORPAY_KEY_ID = 'rzp_test_RRgKsdeTvA0ay'; // Replace with your actual key from .env
+    const RAZORPAY_KEY_ID = 'rzp_test_RRgKsdeTvA0ay'; // Using your TEST key
 
     const getElement = id => document.getElementById(id);
 
@@ -629,40 +621,31 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.classList.remove("show"), 3000);
     };
 
-    /**
-     * A robust, reusable function to make calls to your backend API.
-     * It automatically handles tokens, loading states, and errors.
-     */
     const apiCall = async (endpoint, body, button = null) => {
         const originalText = button ? button.textContent : null;
         if (button) {
             button.disabled = true;
             button.textContent = 'Processing...';
         }
-
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('jovialFlamesToken');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-
         try {
             const response = await fetch(API_URL + endpoint, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body),
             });
-
             const data = await response.json();
-
             if (!response.ok) {
-                // If response is not ok, throw an error to be caught below
                 throw new Error(data.message || 'An unknown error occurred.');
             }
-            return data; // Success
+            return data;
         } catch (error) {
             showToast(error.message, true);
-            throw error; // Re-throw the error so the calling function knows it failed
+            throw error;
         } finally {
             if (button) {
                 button.disabled = false;
@@ -671,21 +654,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
-    // --- 2. INITIALIZATION & UI SETUP ---
-    // Fade-in animation for cards on load
-    const cards = document.querySelectorAll('.card');
-    cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.05}s`;
+    // --- 2. UI SETUP ---
+    getElement("darkToggle").addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+        localStorage.setItem('dark-mode', document.body.classList.contains('dark'));
     });
-
     const loadDarkMode = () => {
         if (localStorage.getItem('dark-mode') === 'true') {
             document.body.classList.add('dark');
             getElement("darkToggle").textContent = "☀️";
         }
     };
-
 
     // --- 3. MODAL MANAGEMENT ---
     const authModal = getElement("auth-modal");
@@ -699,24 +679,22 @@ document.addEventListener('DOMContentLoaded', () => {
     window.closePolicyModal = () => { policyModal.style.display = 'none'; };
     window.openTrackingModal = () => { trackingModal.style.display = 'grid'; };
     window.closeTrackingModal = () => { trackingModal.style.display = 'none'; };
-
     window.updateAuthModalView = (viewName) => {
         modalViews.forEach(viewId => {
             getElement(viewId).style.display = viewId.startsWith(viewName) ? 'block' : 'none';
         });
     };
-
     const policyData = {
         privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us...</p>` },
         return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames...</p>` }
     };
 
-
-    // --- 4. AUTHENTICATION LOGIC (WIRED TO BACKEND) ---
+    // --- 4. AUTHENTICATION LOGIC ---
     const authButtons = getElement("auth-buttons");
     const userButtons = getElement("user-buttons");
     const userGreeting = getElement("user-greeting");
-    let pendingUserDetails = null; // Used for signup process
+    let pendingUserDetails = null;
+    let emailToReset = null;
 
     const updateUserUI = (user) => {
         if (user) {
@@ -729,30 +707,22 @@ document.addEventListener('DOMContentLoaded', () => {
             userGreeting.textContent = "";
         }
     };
-
     const checkAuthState = () => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (user) {
-            updateUserUI(user);
-        }
+        if (user) updateUserUI(user);
     };
 
     getElement('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
-        pendingUserDetails = {
-            name: getElement('signup-name').value.trim(),
-            email: getElement('signup-email').value.trim(),
-            password: getElement('signup-password').value
-        };
+        pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
         try {
             await apiCall('/api/signup-request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
-        } catch (error) { /* Error is handled by apiCall */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
     getElement('verify-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
@@ -762,9 +732,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
-        } catch (error) { /* Error is handled by apiCall */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
     getElement('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
@@ -777,20 +746,40 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUserUI(data.user);
             showToast("Logged in successfully!");
             closeAuthModal();
-        } catch (error) { /* Error is handled by apiCall */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
+    getElement('forgot-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button');
+        emailToReset = getElement('forgot-email').value.trim();
+        try {
+            const data = await apiCall('/api/forgot-password', { email: emailToReset }, button);
+            showToast(data.message);
+            updateAuthModalView('reset');
+        } catch (error) { emailToReset = null; }
+    });
+    getElement('reset-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button');
+        const otp = getElement('reset-otp').value;
+        const newPassword = getElement('reset-password').value;
+        if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
+        try {
+            await apiCall('/api/reset-password', { email: emailToReset, otp, newPassword }, button);
+            showToast("Password has been reset successfully. Please log in.");
+            emailToReset = null;
+            updateAuthModalView('login');
+        } catch (error) { /* Handled by apiCall */ }
+    });
     window.logoutUser = () => {
         localStorage.removeItem('jovialFlamesUser');
         localStorage.removeItem('jovialFlamesToken');
         showToast("Logged out successfully.");
         updateUserUI(null);
         if(ordersSidebar.classList.contains("open")) {
-            toggleOrders();
+            ordersSidebar.classList.remove("open");
         }
     };
-    // (Forgot/Reset password flows would be refactored similarly)
-
 
     // --- 5. CART LOGIC ---
     let cart = [];
@@ -800,10 +789,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartSummaryContainer = getElement("cartSummary");
     const cartCountBadge = getElement("cartCountBadge");
     const minOrderNotice = getElement("minOrderNotice");
-
     const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
     const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
-
+    
     window.addToCart = (button, name, price) => {
         const existingItem = cart.find(item => item.name === name);
         if (existingItem) { existingItem.quantity++; }
@@ -817,37 +805,28 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
-
+    window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
+    
+    // THIS IS THE MISSING FUNCTION
+    window.toggleCart = () => cartSidebar.classList.toggle("open");
+    
     const renderCart = () => {
         let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = "<div class='muted' style='text-align:center; padding: 1rem;'>Your cart is empty</div>";
             cartSummaryContainer.innerHTML = "";
             cartCountBadge.style.display = 'none';
-            minOrderNotice.style.display = 'none';
             getElement('checkout-section').style.display = 'none';
             return;
         }
-
-        cartItemsContainer.innerHTML = cart.map((item, index) => {
-            const itemTotal = item.price * item.quantity;
-            return `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${itemTotal}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`;
-        }).join('');
-
+        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
         let shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
         let shippingText = (shippingCharges > 0) ? `Rs. ${shippingCharges}` : `Free`;
         const grandTotal = subtotal + shippingCharges;
-
-        cartSummaryContainer.innerHTML = `
-            <div><span>Subtotal</span> <span>Rs. ${subtotal}</span></div>
-            <div><span>Shipping</span> <span>${shippingText}</span></div>
-            <div class="grand-total"><span>Grand Total</span> <span>Rs. ${grandTotal}</span></div>
-        `;
+        cartSummaryContainer.innerHTML = `<div><span>Subtotal</span> <span>Rs. ${subtotal}</span></div><div><span>Shipping</span> <span>${shippingText}</span></div><div class="grand-total"><span>Grand Total</span> <span>Rs. ${grandTotal}</span></div>`;
         cartCountBadge.textContent = totalItems;
         cartCountBadge.style.display = 'grid';
-
         if (subtotal < MIN_ORDER_VALUE) {
             minOrderNotice.textContent = `Minimum order is Rs. ${MIN_ORDER_VALUE}. Add Rs. ${MIN_ORDER_VALUE - subtotal} more.`;
             minOrderNotice.style.display = 'block';
@@ -858,207 +837,106 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
-    window.toggleCart = () => cartSidebar.classList.toggle("open");
-
-
-    // --- 6. ORDER & PAYMENT LOGIC (THE FIX!) ---
-    const ordersSidebar = getElement("ordersSidebar"); // Ensure this is defined
-
-    const placeFinalOrderOnServer = async (paymentMethod, button) => {
+    // --- 6. ORDER & PAYMENT LOGIC ---
+    const ordersSidebar = getElement("ordersSidebar");
+    const orderList = getElement("orderList");
+    const placeFinalOrderOnServer = async (paymentMethod) => {
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const grandTotal = subtotal + ((subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0);
-        
-        const orderDetails = {
-            id: 'JF' + Date.now().toString().slice(-6), // Simple unique ID
-            date: new Date().toLocaleDateString('en-IN'),
-            items: cart,
-            grandTotal: grandTotal,
-            paymentMethod: paymentMethod,
-            status: 'Order Placed'
-        };
-
+        const orderDetails = { id: 'JF' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('en-IN'), items: cart, grandTotal: grandTotal, paymentMethod: paymentMethod, status: 'Order Placed' };
         try {
-            await apiCall('/api/order/place', { orderDetails }, button);
+            await apiCall('/api/order/place', { orderDetails });
             showToast(`Order #${orderDetails.id} placed successfully!`);
-            cart = []; // Clear the cart
+            cart = [];
             saveCart();
             renderCart();
             toggleCart();
-            // In a real app, you might redirect to a success page
-        } catch (error) {
-            // The error toast is already shown by apiCall, so we just log it
-            console.error("Failed to place final order:", error);
-        }
+        } catch (error) { console.error("Failed to place final order:", error); }
     };
-
+    
     window.placeOrder = async (paymentMethod) => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user) {
-            toggleCart(); openAuthModal('login');
-            return showToast("Please log in to place an order.", true);
-        }
-
+        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
         const name = getElement("custName").value.trim();
         const phone = getElement("custPhone").value.trim();
         const address = getElement("custAddr").value.trim();
         const pincode = getElement("custPin").value.trim();
         if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
-
         const button = event.target;
-
         if (paymentMethod === 'cod') {
-            await placeFinalOrderOnServer('cod', button);
+            await placeFinalOrderOnServer('cod');
             return;
         }
-
         if (paymentMethod === 'online') {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const grandTotal = subtotal + ((subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0);
-            
+            const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
             try {
-                // Step 1: Create a Razorpay order on your backend
                 const orderData = await apiCall('/api/payment/create-order', { amount: grandTotal }, button);
-                
-                // Step 2: Configure Razorpay options
                 const options = {
-                    key: RAZORPAY_KEY_ID,
-                    amount: orderData.amount,
-                    currency: "INR",
-                    name: "Jovial Flames",
-                    description: "Candle Purchase",
-                    order_id: orderData.id,
+                    key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
                     handler: async function (response) {
                         try {
-                            // Step 3: Verify the payment on your backend
-                            await apiCall('/api/payment/verify', {
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature
-                            });
-
-                            // Step 4: If verification is successful, place the final order
-                            await placeFinalOrderOnServer('online', null); // Button state already handled
-
-                        } catch(error) { 
-                            showToast("Payment verification failed. Please contact support.", true); 
-                        }
+                            await apiCall('/api/payment/verify', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature });
+                            await placeFinalOrderOnServer('online');
+                        } catch(error) { showToast("Payment verification failed. Please contact support.", true); }
                     },
-                    prefill: { name: user.name, email: user.email, contact: phone },
-                    theme: { color: "#d97706" }
+                    prefill: { name: user.name, email: user.email, contact: phone }, theme: { color: "#d97706" }
                 };
-
-                // Step 5: Open the Razorpay payment window
                 const rzp = new Razorpay(options);
-                rzp.on('payment.failed', function (response){ 
-                    showToast('Payment failed: ' + response.error.description, true); 
-                });
+                rzp.on('payment.failed', (response) => showToast('Payment failed: ' + response.error.description, true));
                 rzp.open();
-
-            } catch(error) { /* Error creating Razorpay order is handled by apiCall */ }
+            } catch(error) { /* Handled by apiCall */ }
         }
+    };
+    
+    window.toggleOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) { openAuthModal('login'); return showToast("Please log in to view your orders.", true); }
+        ordersSidebar.classList.toggle("open");
+        if (ordersSidebar.classList.contains("open")) renderOrders();
+    };
+    const renderOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders || user.orders.length === 0) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+            return;
+        }
+        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div><div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div><div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
+    };
+
+    window.trackOrderById = () => {
+        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
+        if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders) return showToast("Please log in to find orders.", true);
+        const order = user.orders.find(o => o.id === orderIdToTrack);
+        if (order) showTrackingDetails(orderIdToTrack);
+        else showToast(`Order #${orderIdToTrack} not found.`, true);
+    };
+    const showTrackingDetails = (orderId) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        const order = user.orders.find(o => o.id === orderId);
+        if (!order) return;
+        getElement('tracking-order-id').textContent = order.id;
+        const trackingDetailsContainer = getElement('tracking-details');
+        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+        const currentStatusIndex = statuses.indexOf(order.status);
+        let timelineHTML = '<ul class="tracking-timeline">';
+        statuses.forEach((status, index) => {
+            const isCompleted = index <= currentStatusIndex;
+            let className = isCompleted ? 'completed' : '';
+            if (isCompleted && index === currentStatusIndex) className += ' active';
+            timelineHTML += `<li class="${className}"><div class="status">${status}</div></li>`;
+        });
+        timelineHTML += '</ul>';
+        trackingDetailsContainer.innerHTML = timelineHTML;
+        openTrackingModal();
     };
 
     // --- 7. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
     checkAuthState();
-
-    // --- Add this code inside your script ---
-
     
-    const orderList = getElement("orderList");
-
-    window.toggleOrders = () => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user) {
-            openAuthModal('login');
-            return showToast("Please log in to view your orders.", true);
-        }
-        
-        ordersSidebar.classList.toggle("open");
-
-        if (ordersSidebar.classList.contains("open")) {
-            // This part is important: You need to fetch and render the orders
-            // For now, let's just show a placeholder.
-            renderOrders(); 
-        }
-    };
-
-    const renderOrders = () => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        // The user object from your server contains the orders array
-        if (!user || !user.orders || user.orders.length === 0) {
-            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
-            return;
-        }
-
-        // Display the orders, newest first
-        orderList.innerHTML = [...user.orders].reverse().map(order => {
-            return `<div class="order-item">
-                <div>
-                    <strong>Order: #${order.id}</strong>
-                    <div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div>
-                    <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
-                    <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div>
-                </div>
-            </div>`;
-        }).join('');
-    };
-    // --- Paste this code into your script ---
-
-    window.trackOrderById = () => {
-        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
-        if (!orderIdToTrack) {
-            return showToast("Please enter an Order ID.", true);
-        }
-
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user || !user.orders) {
-            return showToast("Please log in to find orders.", true);
-        }
-
-        const order = user.orders.find(o => o.id === orderIdToTrack);
-
-        if (order) {
-            showTrackingDetails(orderIdToTrack); // You need this helper function too
-        } else {
-            showToast(`Order #${orderIdToTrack} not found in your account.`, true);
-        }
-    };
-
-    const showTrackingDetails = (orderId) => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        const order = user.orders.find(o => o.id === orderId);
-        if (!order) return;
-
-        getElement('tracking-order-id').textContent = order.id;
-        const trackingDetailsContainer = getElement('tracking-details');
-        
-        // This is a mock timeline. In a real app, you'd get this from the server.
-        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
-        const currentStatusIndex = statuses.indexOf(order.status);
-
-        let timelineHTML = '<ul class="tracking-timeline">';
-        statuses.forEach((status, index) => {
-            const isCompleted = index <= currentStatusIndex;
-            const isActive = index === currentStatusIndex;
-            let className = isCompleted ? 'completed' : '';
-            if (isActive) className += ' active';
-
-            timelineHTML += `<li class="${className}">
-                <div class="status">${status}</div>
-            </li>`;
-        });
-        timelineHTML += '</ul>';
-
-        trackingDetailsContainer.innerHTML = timelineHTML;
-        openTrackingModal();
-    };
-
-    // --- End of code to paste ---
-
-    // --- End of code to add ---
 });
 </script>
 </html>
