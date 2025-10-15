@@ -999,6 +999,58 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         }).join('');
     };
+    // --- Paste this code into your script ---
+
+    window.trackOrderById = () => {
+        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
+        if (!orderIdToTrack) {
+            return showToast("Please enter an Order ID.", true);
+        }
+
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders) {
+            return showToast("Please log in to find orders.", true);
+        }
+
+        const order = user.orders.find(o => o.id === orderIdToTrack);
+
+        if (order) {
+            showTrackingDetails(orderIdToTrack); // You need this helper function too
+        } else {
+            showToast(`Order #${orderIdToTrack} not found in your account.`, true);
+        }
+    };
+
+    const showTrackingDetails = (orderId) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        const order = user.orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        getElement('tracking-order-id').textContent = order.id;
+        const trackingDetailsContainer = getElement('tracking-details');
+        
+        // This is a mock timeline. In a real app, you'd get this from the server.
+        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+        const currentStatusIndex = statuses.indexOf(order.status);
+
+        let timelineHTML = '<ul class="tracking-timeline">';
+        statuses.forEach((status, index) => {
+            const isCompleted = index <= currentStatusIndex;
+            const isActive = index === currentStatusIndex;
+            let className = isCompleted ? 'completed' : '';
+            if (isActive) className += ' active';
+
+            timelineHTML += `<li class="${className}">
+                <div class="status">${status}</div>
+            </li>`;
+        });
+        timelineHTML += '</ul>';
+
+        trackingDetailsContainer.innerHTML = timelineHTML;
+        openTrackingModal();
+    };
+
+    // --- End of code to paste ---
 
     // --- End of code to add ---
 });
