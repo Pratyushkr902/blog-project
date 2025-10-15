@@ -958,7 +958,28 @@ window.placeOrder = async (paymentMethod) => {
         trackingDetailsContainer.innerHTML = timelineHTML;
         openTrackingModal();
     };
+// --- Add this code to your script ---
 
+// Function for the "Get In Touch" contact form
+window.handleSubmit = (e) => {
+    e.preventDefault();
+    const name = getElement('name').value;
+    showToast(`Thanks, ${name}! We'll be in touch.`);
+    e.target.reset();
+};
+
+// Function for the newsletter subscription form
+window.subscribe = () => {
+    const email = getElement('newsletterEmail').value;
+    if (!email || !email.includes('@')) {
+        return showToast("Please enter a valid email.", true);
+    }
+    showToast(`Discount code sent to ${email}!`);
+    getElement('newsletterEmail').value = "";
+};
+
+// --- 7. RUN ON PAGE LOAD ---
+// ... (rest of the code)
     // --- 7. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
