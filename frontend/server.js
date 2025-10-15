@@ -290,7 +290,7 @@ app.post('/api/order/place', authenticateToken, async (req, res) => {
 const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
-  console.log(`🔥 Server is running on http://localhost:${PORT}`);
+  console.log(`🔥 Server is running on 'http://192.0.0.2:${PORT}`);
 });
 
 // If port is in use, automatically pick a free port
