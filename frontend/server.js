@@ -8,16 +8,18 @@ const bcrypt = require('bcrypt');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 const allowedOrigins = [
     'https://www.jovialflames.com', // ⬅️ Your public frontend domain
     // You can keep local origins for testing, but they should be removed in final production deployment
-    'https://localhost:3000', 
-    'http://localhost:3000'   
+    'https://localhost:3001', 
+    'http://localhost:3001'   
 ];
 
 const corsOptions = {
@@ -70,8 +72,7 @@ const ProductSchema = new mongoose.Schema({
     category: { type: String },
     stock: { type: Number, default: 0 }
 });
-
-const Product = mongoose.model('Product', ProductSchema);
+const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 
 const UserSchema = new mongoose.Schema({
@@ -80,9 +81,7 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     orders: [OrderSchema]
 });
-
-const User = mongoose.model('User', UserSchema);
-
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
 // --- IN-MEMORY OTP STORE (remains the same) ---
 let otps = {};
 
@@ -309,6 +308,33 @@ app.post('/api/order/place', authenticateToken, async (req, res) => {
         res.status(500).json({ message: "Error placing order." });
     }
 });
+
+// server.js
+
+// ... after all your app.post, app.get, and other route definitions
+
+// --- 404 NOT FOUND HANDLER (MUST BE THE LAST ROUTE) ---
+app.use((req, res, next) => {
+    // If the request makes it here, no route matched.
+    // Respond with 404 and a JSON body to prevent the frontend SyntaxError.
+    res.status(404).json({
+        message: 'Endpoint Not Found. Check URL and Method.',
+        requested: `${req.method} ${req.originalUrl}`
+    });
+});
+// -----------------------------------------------------
+
+
+// --- GLOBAL ERROR HANDLER (Optional, but recommended for clean errors) ---
+app.use((err, req, res, next) => {
+    // This catches errors thrown synchronously from any middleware/route
+    console.error("GLOBAL SERVER ERROR STACK:", err.stack);
+    res.status(err.status || 500).json({
+        message: err.message || "Internal Server Error. Please check server logs.",
+        error: err.stack // Only include stack trace in development for security
+    });
+});
+// -----------------------------------------------------------------------
 
 
 // --- SERVER START ---
