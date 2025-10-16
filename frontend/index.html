@@ -606,52 +606,52 @@
   <div id="toast"></div>
 
 </body>
-<script>
+
+    <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
-    const API_URL = 'https://api.jovialflames.com';
-    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Using your TEST key
+    // For local development, use: 'http://localhost:3001'
+    const API_URL = 'https://api.jovialflames.com/api'; 
+    // 🚨 IMPORTANT: Replace with your Razorpay TEST key for development
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv';
 
     const getElement = id => document.getElementById(id);
 
     const showToast = (message, isError = false) => {
         const toast = getElement("toast");
         toast.textContent = message;
-        toast.className = isError ? "error show" : "success show";
+        toast.className = isError ? "error show" : "success show"; // Changed to success for non-errors
         setTimeout(() => toast.classList.remove("show"), 3000);
     };
 
-    const apiCall = async (endpoint, body, button = null) => {
+    // Generic API call function
+    const apiCall = async (method, endpoint, body = null, button = null) => {
         const originalText = button ? button.textContent : null;
-        if (button) {
-            button.disabled = true;
-            button.textContent = 'Processing...';
-        }
+        if (button) { button.disabled = true; button.textContent = 'Processing...'; }
+        
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('jovialFlamesToken');
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
         try {
-            const response = await fetch(API_URL + endpoint, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(body),
-            });
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
+            
+            const response = await fetch(API_URL + endpoint, config);
             const data = await response.json();
+
             if (!response.ok) {
-                throw new Error(data.message || 'An unknown error occurred.');
+                // Handle validation errors from express-validator
+                const errorMessage = data.errors ? data.errors[0].msg : data.message;
+                throw new Error(errorMessage || 'An unknown error occurred.');
             }
             return data;
         } catch (error) {
             showToast(error.message, true);
             throw error;
         } finally {
-            if (button) {
-                button.disabled = false;
-                button.textContent = originalText;
-            }
+            if (button) { button.disabled = false; button.textContent = originalText; }
         }
     };
 
@@ -686,8 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     const policyData = {
-        privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us...</p>` },
-        return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames...</p>` }
+        privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us. We collect personal information such as your name, email, and address solely for the purpose of processing your orders and improving your shopping experience. We do not share your data with third parties without your consent.</p>` },
+        return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames. If you are not entirely satisfied with your purchase, we're here to help. You have 7 calendar days to return an item from the date you received it. To be eligible for a return, your item must be unused and in the same condition that you received it.</p>` }
     };
 
     // --- 4. AUTHENTICATION LOGIC ---
@@ -718,7 +718,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
         try {
-            await apiCall('/api/signup-request-otp', { email: pendingUserDetails.email }, button);
+            // CORRECTED: Endpoint includes /auth prefix
+            await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
@@ -729,7 +730,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
         try {
-            await apiCall('/api/signup-verify', { ...pendingUserDetails, otp }, button);
+            // CORRECTED: Endpoint changed to /auth/register
+            await apiCall('POST', '/auth/register', { ...pendingUserDetails, otp }, button);
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
@@ -741,7 +743,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
         try {
-            const data = await apiCall('/api/login', { email, password }, button);
+            // CORRECTED: Endpoint includes /auth prefix
+            const data = await apiCall('POST', '/auth/login', { email, password }, button);
             localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
             localStorage.setItem('jovialFlamesToken', data.token);
             updateUserUI(data.user);
@@ -754,7 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         emailToReset = getElement('forgot-email').value.trim();
         try {
-            const data = await apiCall('/api/forgot-password', { email: emailToReset }, button);
+            // CORRECTED: Endpoint includes /auth prefix
+            const data = await apiCall('POST', '/auth/forgot-password', { email: emailToReset }, button);
             showToast(data.message);
             updateAuthModalView('reset');
         } catch (error) { emailToReset = null; }
@@ -764,9 +768,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const otp = getElement('reset-otp').value;
         const newPassword = getElement('reset-password').value;
-        if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
         try {
-            await apiCall('/api/reset-password', { email: emailToReset, otp, newPassword }, button);
+            // CORRECTED: Endpoint includes /auth prefix
+            await apiCall('POST', '/auth/reset-password', { email: emailToReset, otp, newPassword }, button);
             showToast("Password has been reset successfully. Please log in.");
             emailToReset = null;
             updateAuthModalView('login');
@@ -777,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('jovialFlamesToken');
         showToast("Logged out successfully.");
         updateUserUI(null);
-        if(ordersSidebar.classList.contains("open")) {
+        if (ordersSidebar.classList.contains("open")) {
             ordersSidebar.classList.remove("open");
         }
     };
@@ -807,8 +811,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
     window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
-    
-    // THIS IS THE MISSING FUNCTION
     window.toggleCart = () => cartSidebar.classList.toggle("open");
     
     const renderCart = () => {
@@ -841,78 +843,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. ORDER & PAYMENT LOGIC ---
     const ordersSidebar = getElement("ordersSidebar");
     const orderList = getElement("orderList");
-// --- Replace your old function with this corrected one ---
 
-const placeFinalOrderOnServer = async (paymentMethod, button) => {
-    const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
-    
-    // 1. GET THE ADDRESS DETAILS FROM THE FORM
-    const customerName = getElement("custName").value.trim();
-    const customerPhone = getElement("custPhone").value.trim();
-    const deliveryAddress = getElement("custAddr").value.trim();
-    const pincode = getElement("custPin").value.trim();
+    window.placeOrder = async (paymentMethod, event) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
+        
+        const customerName = getElement("custName").value.trim();
+        const customerPhone = getElement("custPhone").value.trim();
+        const deliveryAddress = getElement("custAddr").value.trim();
+        const pincode = getElement("custPin").value.trim();
+        if (!customerName || !customerPhone || !deliveryAddress || !pincode) return showToast("Please fill in all delivery details.", true);
+        
+        const button = event.target;
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const shipping = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
+        const grandTotal = subtotal + shipping;
 
-    // 2. CREATE THE COMPLETE ORDER OBJECT
-    const orderDetails = {
-        id: 'JF' + Date.now().toString().slice(-6),
-        date: new Date().toLocaleDateString('en-IN'),
-        items: cart,
-        grandTotal: grandTotal,
-        paymentMethod: paymentMethod,
-        status: 'Order Placed',
-        // 3. INCLUDE THE NEW ADDRESS FIELDS
-        customerName: customerName,
-        customerPhone: customerPhone,
-        deliveryAddress: deliveryAddress,
-        pincode: pincode
-    };
-
-    try {
-        await apiCall('/api/order/place', { orderDetails }, button);
-        showToast(`Order #${orderDetails.id} placed successfully!`);
-        cart = [];
-        saveCart();
-        renderCart();
-        toggleCart();
-    } catch (error) {
-        console.error("Failed to place final order:", error);
-    }
-};
-
-// Also, update the placeOrder function to pass the button correctly
-window.placeOrder = async (paymentMethod) => {
-    const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-    if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
-    const name = getElement("custName").value.trim();
-    const phone = getElement("custPhone").value.trim();
-    const address = getElement("custAddr").value.trim();
-    const pincode = getElement("custPin").value.trim();
-    if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
-    
-    const button = event.target; // Get the button that was clicked
-
-    if (paymentMethod === 'cod') {
-        await placeFinalOrderOnServer('cod', button); // Pass the button here
-        return;
-    }
-        if (paymentMethod === 'online') {
-            const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
+        const orderDetails = {
+            id: 'JF' + Date.now().toString().slice(-6),
+            items: cart,
+            grandTotal: grandTotal,
+            customerName, customerPhone, deliveryAddress, pincode
+        };
+        
+        const placeFinalOrder = async (paymentInfo) => {
             try {
-                const orderData = await apiCall('/api/payment/create-order', { amount: grandTotal }, button);
+                // CORRECTED: Endpoint includes /orders prefix
+                const data = await apiCall('POST', '/orders/place', { orderDetails, paymentDetails: paymentInfo }, button);
+                showToast(`Order #${data.orderId} placed successfully!`);
+                cart = [];
+                saveCart();
+                renderCart();
+                toggleCart();
+            } catch(e) { /* Handled */ }
+        };
+
+        if (paymentMethod === 'cod') {
+            await placeFinalOrder({ method: 'cod' });
+            return;
+        }
+
+        if (paymentMethod === 'online') {
+            try {
+                // CORRECTED: Endpoint changed to /orders/create-razorpay-order
+                const orderData = await apiCall('POST', '/orders/create-razorpay-order', { amount: grandTotal }, button);
                 const options = {
                     key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
-                    handler: async function (response) {
-                        try {
-                            await apiCall('/api/payment/verify', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature });
-                            await placeFinalOrderOnServer('online');
-                        } catch(error) { showToast("Payment verification failed. Please contact support.", true); }
+                    handler: async (response) => {
+                        await placeFinalOrder({ method: 'online', verification: response });
                     },
-                    prefill: { name: user.name, email: user.email, contact: phone }, theme: { color: "#d97706" }
+                    prefill: { name: user.name, email: user.email, contact: customerPhone }, theme: { color: "#d97706" }
                 };
                 const rzp = new Razorpay(options);
                 rzp.on('payment.failed', (response) => showToast('Payment failed: ' + response.error.description, true));
                 rzp.open();
-            } catch(error) { /* Handled by apiCall */ }
+            } catch(error) { /* Handled */ }
         }
     };
     
@@ -922,70 +907,48 @@ window.placeOrder = async (paymentMethod) => {
         ordersSidebar.classList.toggle("open");
         if (ordersSidebar.classList.contains("open")) renderOrders();
     };
-    const renderOrders = () => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user || !user.orders || user.orders.length === 0) {
-            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
-            return;
+
+    const renderOrders = async () => {
+        try {
+            // IMPROVEMENT: Fetch latest orders directly from the server
+            const orders = await apiCall('GET', '/orders/myorders');
+            if (!orders || orders.length === 0) {
+                orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+                return;
+            }
+            orderList.innerHTML = orders.map(order => `
+                <div class="order-item">
+                    <div>
+                        <strong>Order: #${order.orderId}</strong>
+                        <div class="muted" style="font-size:0.8em;">Placed on: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
+                        <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
+                        <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div>
+                    </div>
+                </div>`
+            ).join('');
+        } catch (error) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>Could not load orders.</div>`;
         }
-        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div><div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div><div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
+    };
+    
+    window.handleSubmit = (e) => {
+        e.preventDefault();
+        const name = getElement('name').value;
+        showToast(`Thanks, ${name}! We'll be in touch.`);
+        e.target.reset();
     };
 
-    window.trackOrderById = () => {
-        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
-        if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user || !user.orders) return showToast("Please log in to find orders.", true);
-        const order = user.orders.find(o => o.id === orderIdToTrack);
-        if (order) showTrackingDetails(orderIdToTrack);
-        else showToast(`Order #${orderIdToTrack} not found.`, true);
+    window.subscribe = () => {
+        const email = getElement('newsletterEmail').value;
+        if (!email || !email.includes('@')) return showToast("Please enter a valid email.", true);
+        showToast(`Discount code sent to ${email}!`);
+        getElement('newsletterEmail').value = "";
     };
-    const showTrackingDetails = (orderId) => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        const order = user.orders.find(o => o.id === orderId);
-        if (!order) return;
-        getElement('tracking-order-id').textContent = order.id;
-        const trackingDetailsContainer = getElement('tracking-details');
-        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
-        const currentStatusIndex = statuses.indexOf(order.status);
-        let timelineHTML = '<ul class="tracking-timeline">';
-        statuses.forEach((status, index) => {
-            const isCompleted = index <= currentStatusIndex;
-            let className = isCompleted ? 'completed' : '';
-            if (isCompleted && index === currentStatusIndex) className += ' active';
-            timelineHTML += `<li class="${className}"><div class="status">${status}</div></li>`;
-        });
-        timelineHTML += '</ul>';
-        trackingDetailsContainer.innerHTML = timelineHTML;
-        openTrackingModal();
-    };
-// --- Add this code to your script ---
 
-// Function for the "Get In Touch" contact form
-window.handleSubmit = (e) => {
-    e.preventDefault();
-    const name = getElement('name').value;
-    showToast(`Thanks, ${name}! We'll be in touch.`);
-    e.target.reset();
-};
-
-// Function for the newsletter subscription form
-window.subscribe = () => {
-    const email = getElement('newsletterEmail').value;
-    if (!email || !email.includes('@')) {
-        return showToast("Please enter a valid email.", true);
-    }
-    showToast(`Discount code sent to ${email}!`);
-    getElement('newsletterEmail').value = "";
-};
-
-// --- 7. RUN ON PAGE LOAD ---
-// ... (rest of the code)
     // --- 7. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
     checkAuthState();
-    
 });
 </script>
 
