@@ -496,7 +496,8 @@
           </div>
     
           <div id="verify-view" style="display: none;">
-  <h2>Verify Your Email</h2>
+            <form id="verify-form"></form>
+          <h2>Verify Your Email</h2>
   <p>An OTP has been sent to <strong id="otp-email-display"></strong></p>
   <input type="text" id="verify-otp" placeholder="Enter OTP" required>
   <button type="submit">Verify & Create Account</button>
@@ -608,17 +609,20 @@
   <div id="toast"></div>
 
 </body>    
+
+</html>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
     const API_URL = 'https://api.jovialflames.com';
-    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Using your TEST key
+    const RAZORPAY_KEY_ID = 'rzp_test_YourTestKeyHere'; // Using a TEST key is safer
 
     const getElement = id => document.getElementById(id);
 
     const showToast = (message, isError = false) => {
         const toast = getElement("toast");
+        if (!toast) return;
         toast.textContent = message;
         toast.className = isError ? "error show" : "success show";
         setTimeout(() => toast.classList.remove("show"), 3000);
@@ -792,6 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartSummaryContainer = getElement("cartSummary");
     const cartCountBadge = getElement("cartCountBadge");
     const minOrderNotice = getElement("minOrderNotice");
+
     const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
     const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
     
@@ -809,8 +814,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
     window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
-    
-    // THIS IS THE MISSING FUNCTION
     window.toggleCart = () => cartSidebar.classList.toggle("open");
     
     const renderCart = () => {
@@ -823,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
             getElement('checkout-section').style.display = 'none';
             return;
         }
-        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
+        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
         let shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
         let shippingText = (shippingCharges > 0) ? `Rs. ${shippingCharges}` : `Free`;
         const grandTotal = subtotal + shippingCharges;
@@ -843,60 +846,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. ORDER & PAYMENT LOGIC ---
     const ordersSidebar = getElement("ordersSidebar");
     const orderList = getElement("orderList");
-// --- Replace your old function with this corrected one ---
 
-const placeFinalOrderOnServer = async (paymentMethod, button) => {
-    const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
-    
-    // 1. GET THE ADDRESS DETAILS FROM THE FORM
-    const customerName = getElement("custName").value.trim();
-    const customerPhone = getElement("custPhone").value.trim();
-    const deliveryAddress = getElement("custAddr").value.trim();
-    const pincode = getElement("custPin").value.trim();
+    const placeFinalOrderOnServer = async (paymentMethod) => {
+        const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
+        
+        const orderDetails = {
+            id: 'JF' + Date.now().toString().slice(-6),
+            date: new Date().toLocaleDateString('en-IN'),
+            items: cart,
+            grandTotal: grandTotal,
+            paymentMethod: paymentMethod,
+            status: 'Order Placed',
+            customerName: getElement("custName").value.trim(),
+            customerPhone: getElement("custPhone").value.trim(),
+            deliveryAddress: getElement("custAddr").value.trim(),
+            pincode: getElement("custPin").value.trim()
+        };
 
-    // 2. CREATE THE COMPLETE ORDER OBJECT
-    const orderDetails = {
-        id: 'JF' + Date.now().toString().slice(-6),
-        date: new Date().toLocaleDateString('en-IN'),
-        items: cart,
-        grandTotal: grandTotal,
-        paymentMethod: paymentMethod,
-        status: 'Order Placed',
-        // 3. INCLUDE THE NEW ADDRESS FIELDS
-        customerName: customerName,
-        customerPhone: customerPhone,
-        deliveryAddress: deliveryAddress,
-        pincode: pincode
+        try {
+            await apiCall('/api/order/place', { orderDetails });
+            showToast(`Order #${orderDetails.id} placed successfully!`);
+            cart = [];
+            saveCart();
+            renderCart();
+            toggleCart();
+        } catch (error) {
+            console.error("Failed to place final order:", error);
+        }
     };
 
-    try {
-        await apiCall('/api/order/place', { orderDetails }, button);
-        showToast(`Order #${orderDetails.id} placed successfully!`);
-        cart = [];
-        saveCart();
-        renderCart();
-        toggleCart();
-    } catch (error) {
-        console.error("Failed to place final order:", error);
-    }
-};
+    window.placeOrder = async (paymentMethod, event) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
+        const name = getElement("custName").value.trim();
+        const phone = getElement("custPhone").value.trim();
+        const address = getElement("custAddr").value.trim();
+        const pincode = getElement("custPin").value.trim();
+        if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
+        
+        const button = event.target;
 
-// Also, update the placeOrder function to pass the button correctly
-window.placeOrder = async (paymentMethod) => {
-    const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-    if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
-    const name = getElement("custName").value.trim();
-    const phone = getElement("custPhone").value.trim();
-    const address = getElement("custAddr").value.trim();
-    const pincode = getElement("custPin").value.trim();
-    if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
-    
-    const button = event.target; // Get the button that was clicked
+        if (paymentMethod === 'cod') {
+            await placeFinalOrderOnServer('cod');
+            return;
+        }
 
-    if (paymentMethod === 'cod') {
-        await placeFinalOrderOnServer('cod', button); // Pass the button here
-        return;
-    }
         if (paymentMethod === 'online') {
             const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
             try {
@@ -930,7 +924,7 @@ window.placeOrder = async (paymentMethod) => {
             orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
             return;
         }
-        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div><div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div><div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
+        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted">Placed on: ${order.date}</div><div class="muted">Status: <strong>${order.status}</strong></div><div class="muted" style="font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
     };
 
     window.trackOrderById = () => {
@@ -961,34 +955,29 @@ window.placeOrder = async (paymentMethod) => {
         trackingDetailsContainer.innerHTML = timelineHTML;
         openTrackingModal();
     };
-// --- Add this code to your script ---
 
-// Function for the "Get In Touch" contact form
-window.handleSubmit = (e) => {
-    e.preventDefault();
-    const name = getElement('name').value;
-    showToast(`Thanks, ${name}! We'll be in touch.`);
-    e.target.reset();
-};
+    // --- 7. MISC FORM HANDLERS ---
+    window.handleSubmit = (e) => {
+        e.preventDefault();
+        const name = getElement('name').value;
+        showToast(`Thanks, ${name}! We'll be in touch.`);
+        e.target.reset();
+    };
 
-// Function for the newsletter subscription form
-window.subscribe = () => {
-    const email = getElement('newsletterEmail').value;
-    if (!email || !email.includes('@')) {
-        return showToast("Please enter a valid email.", true);
-    }
-    showToast(`Discount code sent to ${email}!`);
-    getElement('newsletterEmail').value = "";
-};
+    window.subscribe = () => {
+        const email = getElement('newsletterEmail').value;
+        if (!email || !email.includes('@')) {
+            return showToast("Please enter a valid email.", true);
+        }
+        showToast(`Discount code sent to ${email}!`);
+        getElement('newsletterEmail').value = "";
+    };
 
-// --- 7. RUN ON PAGE LOAD ---
-// ... (rest of the code)
-    // --- 7. RUN ON PAGE LOAD ---
+    // --- 8. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
     checkAuthState();
     
 });
 </script>
-</html>
 </html>
