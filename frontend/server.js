@@ -1,362 +1,234 @@
-// server.js - Jovial Flames (complete)
-// -----------------------------------
+// --- IMPORTS ---
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 require('dotenv').config();
 
-// ---------- App setup ----------
+// --- INITIALIZATIONS ---
 const app = express();
+const SALT_ROUNDS = 10;
+
+// --- MIDDLEWARE ---
+app.use(cors());
 app.use(express.json());
 
-// ---------- CORS ----------
-const allowedOrigins = [
-  'https://www.jovialflames.com', // production frontend
-  'http://localhost:3000',        // react dev
-  'http://localhost:3001',
-  'https://localhost:3001'
-];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true
-}));
-
-// ---------- MongoDB ----------
+// --- DATABASE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI, {
-})
-.then(() => console.log('✅ MongoDB connected successfully.'))
-.catch(err => console.error('🔴 MongoDB connection error:', err));
-
-// ---------- Schemas & Models ----------
-const OrderSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  date: { type: String, required: true },
-  items: { type: Array, required: true },
-  grandTotal: { type: Number, required: true },
-  paymentMethod: { type: String, required: true },
-  status: { type: String, default: 'Order Placed' },
-  lastUpdate: { type: Date, default: Date.now },
-  customerName: { type: String, required: true },
-  customerPhone: { type: String, required: true },
-  deliveryAddress: { type: String, required: true },
-  pincode: { type: String, required: true }
+}).then(() => {
+  console.log('✅ Connected to MongoDB');
+}).catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1); // Exit if DB connection fails
 });
 
-const ProductSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: String,
-  price: { type: Number, required: true },
-  image: String,
-  category: String,
-  stock: { type: Number, default: 0 }
-});
-const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
-
-const UserSchema = new mongoose.Schema({
+// --- MONGOOSE MODELS ---
+// User Schema
+const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  orders: [OrderSchema]
-});
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }] // Example reference
+}, { timestamps: true });
 
-// ---------- Services ----------
-const otps = {}; // in-memory OTP store (OK for small app)
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
+const User = mongoose.model('User', userSchema);
+
+// OTP Schema (with auto-expiration)
+const otpSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  code: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now, expires: '10m' } // OTP expires in 10 minutes
 });
 
-// Nodemailer transporter - Gmail (use app password)
+const Otp = mongoose.model('Otp', otpSchema);
+
+// --- NODEMAILER TRANSPORTER ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER, // e.g. youremail@gmail.com
-    pass: process.env.GMAIL_PASS  // app password
-  }
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
 });
-// optional: verify transporter on startup
-transporter.verify().then(() => console.log('✅ Email transporter ready')).catch(err => console.error('⚠️ Email transporter error:', err.message));
 
-// ---------- Auth middleware ----------
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
+// --- VALIDATION RULES ---
+const signupValidationRules = [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+];
+
+const emailValidationRules = [
+  body('email').isEmail().withMessage('Please provide a valid email'),
+];
+
+const passwordResetValidationRules = [
+  body('email').isEmail().withMessage('Email is required'),
+  body('otp').notEmpty().withMessage('OTP is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long'),
+];
+
+// --- HELPER FUNCTION TO SEND OTP ---
+const sendOtpEmail = async (email, subject, text) => {
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  await Otp.findOneAndUpdate({ email }, { code: otpCode }, { upsert: true, new: true });
+
+  const mailOptions = {
+    from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: subject,
+    text: `${text} ${otpCode}\nThis code will expire in 10 minutes.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`OTP sent to ${email}: ${otpCode}`);
 };
 
-// ---------- Routes ----------
 
-// --- Signup: request OTP
-app.post('/api/signup-request-otp', async (req, res) => {
+// --- API ROUTES ---
+
+// 1. SIGNUP: Request an OTP
+app.post('/api/signup-request-otp', emailValidationRules, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email } = req.body;
+
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "An account with this email already exists." });
+    if (existingUser) {
+      return res.status(400).json({ message: 'An account with this email already exists.' });
+    }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otps[email] = { code: otp, expires: Date.now() + 10 * 60 * 1000 };
-
-    await transporter.sendMail({
-      from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject: 'Your Jovial Flames OTP',
-      text: `Your OTP is: ${otp}`
-    });
-
-    res.status(200).json({ message: "OTP sent successfully." });
-  } catch (err) {
-    console.error('Error sending OTP:', err);
-    res.status(500).json({ message: "Failed to send OTP." });
+    await sendOtpEmail(email, 'Your Jovial Flames Verification Code', 'Welcome to Jovial Flames! Your One-Time Password (OTP) is:');
+    res.status(200).json({ message: 'OTP sent successfully to your email.' });
+  } catch (error) {
+    console.error('Error in /signup-request-otp:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
-// --- Signup: verify OTP & create account
-app.post('/api/signup-verify', async (req, res) => {
+// 2. SIGNUP: Verify OTP and Create User
+app.post('/api/signup-verify', signupValidationRules, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { name, email, password, otp } = req.body;
-  const stored = otps[email];
-  if (!stored || stored.code !== otp || Date.now() > stored.expires) {
-    return res.status(400).json({ message: "Invalid or expired OTP." });
-  }
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({ name, email, password: hashedPassword, orders: [] });
-    delete otps[email];
-    res.status(201).json({ message: "Account created successfully." });
-  } catch (err) {
-    console.error('Signup error:', err);
-    res.status(500).json({ message: "Error creating user." });
+    const storedOtp = await Otp.findOne({ email, code: otp });
+    if (!storedOtp) {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const newUser = new User({ name, email, password: hashedPassword });
+    await newUser.save();
+
+    await Otp.deleteOne({ email }); // Clean up used OTP
+
+    res.status(201).json({ message: 'Account created successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Error in /signup-verify:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
-// --- Login
-app.post('/api/login', async (req, res) => {
+// 3. LOGIN
+app.post('/api/login', [body('email').isEmail(), body('password').notEmpty()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found." });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. Please check your email or sign up.' });
+    }
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(401).json({ message: "Invalid password." });
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
 
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    // Create and sign JWT
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+      
+    // Return user data (without password) and token
     const { password: _, ...userData } = user.toObject();
-    res.status(200).json({ message: "Login successful.", user: userData, token });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: "Server error during login." });
+    res.status(200).json({ message: 'Login successful.', user: userData, token });
+  } catch (error) {
+    console.error('Error in /login:', error);
+    res.status(500).json({ message: 'Server error.' });
   }
 });
 
-// --- Forgot password (send OTP)
-app.post('/api/forgot-password', async (req, res) => {
+// 4. FORGOT PASSWORD: Request an OTP
+app.post('/api/forgot-password-request-otp', emailValidationRules, async (req, res) => {
   const { email } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    // Always respond 200 to avoid leaking user existence
-    if (!user) return res.status(200).json({ message: "If an account exists, an OTP has been sent." });
+  const user = await User.findOne({ email });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otps[email] = { code: otp, expires: Date.now() + 10 * 60 * 1000 };
-    await transporter.sendMail({
-      from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject: 'Your Password Reset OTP',
-      text: `Your OTP is: ${otp}`
-    });
-    res.status(200).json({ message: "If an account exists, an OTP has been sent." });
-  } catch (err) {
-    console.error('Forgot password error:', err);
-    res.status(500).json({ message: "Failed to send OTP." });
+  if (user) {
+    try {
+      await sendOtpEmail(email, 'Your Password Reset Code', 'Your password reset OTP is:');
+    } catch (error) {
+       console.error("Error sending reset OTP:", error);
+    }
   }
+
+  // Always send a success-like message to prevent user enumeration attacks
+  res.status(200).json({ message: 'If an account with this email exists, a password reset OTP has been sent.' });
 });
 
-// --- Reset password
-app.post('/api/reset-password', async (req, res) => {
+// 5. FORGOT PASSWORD: Verify OTP and Reset Password
+app.post('/api/reset-password-verify-otp', passwordResetValidationRules, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { email, otp, newPassword } = req.body;
-  const stored = otps[email];
-  if (!stored || stored.code !== otp || Date.now() > stored.expires) {
-    return res.status(400).json({ message: "Invalid or expired OTP." });
-  }
-  try {
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await User.updateOne({ email }, { $set: { password: hashed } });
-    delete otps[email];
-    res.status(200).json({ message: "Password has been reset successfully." });
-  } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).json({ message: "Error resetting password." });
-  }
-});
 
-// --- Products
-app.get('/api/products', async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.status(200).json(products);
-  } catch (err) {
-    console.error('Get products error:', err);
-    res.status(500).json({ message: "Error fetching products." });
-  }
-});
-
-app.get('/api/products/search', async (req, res) => {
-  const q = req.query.q;
-  if (!q) return res.status(400).json({ message: "Search term is required." });
-  try {
-    const products = await Product.find({ name: { $regex: q, $options: 'i' } });
-    res.status(200).json(products);
-  } catch (err) {
-    console.error('Search products error:', err);
-    res.status(500).json({ message: "Error searching products." });
-  }
-});
-
-// --- Razorpay: create order
-app.post('/api/payment/create-order', async (req, res) => {
-  try {
-    const { amount } = req.body;
-    if (!amount || isNaN(amount)) return res.status(400).json({ message: "Valid amount is required." });
-
-    const options = {
-      amount: Math.round(amount * 100), // paise
-      currency: 'INR',
-      receipt: crypto.randomBytes(10).toString('hex')
-    };
-    const order = await razorpay.orders.create(options);
-    res.status(200).json(order);
-  } catch (err) {
-    console.error('Error creating razorpay order:', err);
-    res.status(500).json({ message: "Failed to create order." });
-  }
-});
-
-// --- Razorpay: verify payment
-app.post('/api/payment/verify', async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ message: "Missing verification fields." });
+    const storedOtp = await Otp.findOne({ email, code: otp });
+    if (!storedOtp) {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
     }
+    
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await User.updateOne({ email }, { password: hashedPassword });
 
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expected = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body.toString()).digest('hex');
+    await Otp.deleteOne({ email }); // Clean up
 
-    if (expected === razorpay_signature) {
-      return res.status(200).json({ message: "Payment verified successfully." });
-    } else {
-      return res.status(400).json({ message: "Invalid signature." });
-    }
-  } catch (err) {
-    console.error('Payment verification error:', err);
-    res.status(500).json({ message: "Payment verification failed." });
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+  } catch (error) {
+    console.error('Error in /reset-password-verify-otp:', error);
+    res.status(500).json({ message: 'Server error.' });
   }
 });
 
-// --- Place order (used for both online and COD) ---
-/*
-  Expected body:
-  {
-    orderDetails: { id, date, items, grandTotal, customerName, customerPhone, deliveryAddress, pincode, ... },
-    paymentMethod: 'online' | 'cod'
-  }
-*/
-app.post('/api/order/place', authenticateToken, async (req, res) => {
-  try {
-    const { orderDetails, paymentMethod } = req.body;
-    if (!orderDetails || !orderDetails.id) return res.status(400).json({ message: "Order details required." });
 
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found." });
-
-    // Push order
-    user.orders.push({ ...orderDetails, paymentMethod, status: (paymentMethod === 'online' ? 'Paid' : 'Order Placed') });
-    await user.save();
-
-    // Send confirmation email
-    const subject = paymentMethod === 'online' ? '🎉 Order Confirmed - Jovial Flames' : '🕯️ Order Placed - Cash on Delivery';
-    const html = `
-      <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.4">
-        <h2>Thank you, ${orderDetails.customerName}!</h2>
-        <p>Your order <strong>#${orderDetails.id}</strong> has been ${paymentMethod === 'online' ? 'confirmed and paid' : 'placed (Cash on Delivery)'}.</p>
-        <p><strong>Amount:</strong> ₹${orderDetails.grandTotal}</p>
-        <p><strong>Address:</strong> ${orderDetails.deliveryAddress} - ${orderDetails.pincode}</p>
-        <h4>Items:</h4>
-        <ul>
-          ${orderDetails.items.map(i => `<li>${i.name} x ${i.quantity} — ₹${i.price * i.quantity}</li>`).join('')}
-        </ul>
-        <p>We’ll notify you when your order ships. 🌸</p>
-        <hr />
-        <p style="font-size:12px;color:#666">Jovial Flames • Handcrafted with love 🕯️</p>
-      </div>
-    `;
-
-    await transporter.sendMail({
-      from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
-      to: user.email,
-      subject,
-      html
-    });
-
-    return res.status(201).json({ message: `Order #${orderDetails.id} placed. Confirmation email sent.` });
-  } catch (err) {
-    console.error('Place order error:', err);
-    res.status(500).json({ message: "Error placing order." });
-  }
-});
-
-// --- Pay on delivery quick route (if frontend uses it directly) ---
-app.post('/api/pay-on-delivery', authenticateToken, async (req, res) => {
-  // This can mirror /api/order/place but kept for compatibility if frontend expects /api/pay-on-delivery
-  try {
-    const { orderDetails } = req.body;
-    if (!orderDetails) return res.status(400).json({ message: "Order details required." });
-
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found." });
-
-    user.orders.push({ ...orderDetails, paymentMethod: 'cod', status: 'Order Placed' });
-    await user.save();
-
-    await transporter.sendMail({
-      from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
-      to: user.email,
-      subject: '🕯️ Order Placed - Cash on Delivery',
-      html: `<p>Hi ${orderDetails.customerName},</p><p>Your order #${orderDetails.id} has been placed and will be collected on delivery. Amount: ₹${orderDetails.grandTotal}.</p>`
-    });
-
-    return res.status(201).json({ message: 'Order placed with COD. Email sent.' });
-  } catch (err) {
-    console.error('COD place order error:', err);
-    res.status(500).json({ message: 'Failed to place COD order.' });
-  }
-});
-
-// --- 404 handler ---
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint Not Found. Check URL & Method.', requested: `${req.method} ${req.originalUrl}` });
-});
-
-// --- Global error handler (basic) ---
-app.use((err, req, res, next) => {
-  console.error('GLOBAL ERROR:', err.stack || err);
-  res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
-});
-
-// ---------- Start server ----------
+// --- SERVER INITIALIZATION ---
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`🔥 Server running on http://localhost:${PORT}`));
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Jovial Flames API! Server is running correctly. 🎉');
+});
+
+app.listen(PORT, () => {
+  console.log(`🔥 Server is running on http://localhost:${PORT}`);
+});
