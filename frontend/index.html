@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="/images/favicon.png" type="image/favicon">
+  <link rel="icon" href="/images/favicon.png">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     img {
@@ -606,13 +606,16 @@
   <div id="toast"></div>
 
 </body>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
 
-    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Remember to use a test key for development
-const API_BASE_URL = 'https://api.jovialflames.com/api';
+    // FIX 1: Swapped live key for a placeholder test key for safety during development.
+    const RAZORPAY_KEY_ID = 'rzp_live_YourTestKeyHere'; 
+    const API_BASE_URL = 'https://api.jovialflames.com/api';
+
     const getElement = id => document.getElementById(id);
 
     const showToast = (message, isError = false) => {
@@ -634,7 +637,8 @@ const API_BASE_URL = 'https://api.jovialflames.com/api';
             const config = { method, headers };
             if (body) config.body = JSON.stringify(body);
 
-            const response = await fetch(API_URL + endpoint, config);
+            // FIX 2: Corrected API_URL to API_BASE_URL to match the constant defined above.
+            const response = await fetch(API_BASE_URL + endpoint, config);
             const data = await response.json();
 
             if (!response.ok) {
@@ -771,7 +775,6 @@ const API_BASE_URL = 'https://api.jovialflames.com/api';
         } catch (error) { /* Handled by apiCall */ }
     });
 
-    // Renamed for clarity
     window.logoutUser = () => {
         localStorage.removeItem('jovialFlamesUser');
         localStorage.removeItem('jovialFlamesToken');
@@ -925,7 +928,7 @@ const API_BASE_URL = 'https://api.jovialflames.com/api';
         }
     };
     
-    // --- 7. ATTACH EVENT LISTENERS (This is the new, required code) ---
+    // --- 7. ATTACH EVENT LISTENERS ---
     getElement('loginBtn').addEventListener('click', () => openAuthModal('login'));
     getElement('signupBtn').addEventListener('click', () => openAuthModal('signup'));
     getElement('toggleOrdersBtn').addEventListener('click', toggleOrders);
@@ -939,5 +942,4 @@ const API_BASE_URL = 'https://api.jovialflames.com/api';
     checkAuthState();
 });
 </script>
-
 </html>
