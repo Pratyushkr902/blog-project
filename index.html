@@ -8,7 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="/images/favicon.png" type="image/favicon">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
+    img {
+  max-width: 100%;
+  height: auto;
+}
+
     :root{
       --bg:#fff8f4;
       --card:#ffffff;
@@ -37,6 +44,10 @@
       margin:0 auto;
       padding:2rem 0;
     }
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
 
     header{
       display:flex;
@@ -95,6 +106,16 @@
       opacity: 0;
       transform: translateY(20px);
       animation: fadeIn .5s forwards;
+      .content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card {
+  flex: 1 1 300px; /* grow, shrink, min width 300px */
+}
+
     }
     @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
     .card:hover{transform:translateY(-8px); box-shadow: var(--shadow-hover);}
@@ -206,6 +227,61 @@
     }
 
     @media (max-width: 768px) {
+  .candle {
+    width: 50px; 
+    height: auto;
+  }
+    }
+  /* Tablets and below */
+@media screen and (max-width: 1024px) {
+  .header {
+    font-size: 20px;
+  }
+  .nav-menu {
+    display: block; /* stack menu vertically */
+  }
+}
+
+@media (max-width: 768px) {
+  .candle {
+    width: 50px; 
+    height: auto;
+  }
+  .header {
+    font-size: 16px;
+    text-align: center;
+  }
+  .content {
+    flex-direction: column;
+  }
+  .card {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  nav { display: none; } /* Move this inside */
+  header { flex-wrap: wrap; justify-content: space-between; }
+  header > .brand { width: 100%; margin-bottom: 1rem; }
+  .features { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 1rem; }
+  .footer-grid > div { justify-self: center !important; text-align: center !important; }
+}
+
+  .card {
+  background:var(--card);padding:1rem;border-radius:16px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:.75rem;transition:transform .25s, box-shadow .25s;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn .5s forwards;
+}
+
+/* Define .content separately */
+.content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+  
+ {
       nav { display: none; }
       header { flex-wrap: wrap; justify-content: space-between; }
       header > .brand { width: 100%; margin-bottom: 1rem; }
@@ -235,7 +311,7 @@
   <div class="container">
     <header>
       <a class="brand" href="#">
-        <div class="logo" aria-hidden><img src="images/jovial-flames-logo.png" alt="Jovial Flames Logo" width="26"></div>
+        <div class="logo" aria-hidden><img src="/images/jovial-flames-logo.png" alt="Jovial Flames Logo" width="26"></div>
         <div>
           <div style="font-weight:800">Jovial Flames</div>
           <div style="font-size:.85rem;color:var(--muted)">Premium Handcrafted Candles</div>
@@ -301,43 +377,43 @@
             <div class="products">
                 <article class="card"><div class="img"><img src="images/mini-bubble.jpg" alt="Mini-Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Mini-Bubble</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Mini-Bubble', 45)">Add to Cart</button></article>
                 <article class="card"><div class="img"><img src="images/big-standing-bubble.jpg" alt="Big Standing Bubble Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Big Bubble</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Big Bubble', 75)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/vintage-lady.jpg" alt="Vintage Lady" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Vintage Lady</div><div class="muted">48 Hrs Burn Time</div></div><div class="price">Rs. 199</div></div><button class="btn" onclick="addToCart(this, 'Vintage Lady', 199)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/banding-bubble.jpg" alt="Banding Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Banding Bubble</div><div class="muted">18 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Banding Bubble', 65)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/family-bear.jpg" alt="Family Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Family Bear</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 151</div></div><button class="btn" onclick="addToCart(this, 'Family Bear', 151)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/vintage-lady.jpg" alt="Vintage Lady" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Vintage Lady</div><div class="muted">48 Hrs Burn Time</div></div><div class="price">Rs. 199</div></div><button class="btn" onclick="addToCart(this, 'Vintage Lady', 199)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/banding-bubble.jpg" alt="Banding Bubble" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Banding Bubble</div><div class="muted">18 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Banding Bubble', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/family-bear.jpg" alt="Family Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Family Bear</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 151</div></div><button class="btn" onclick="addToCart(this, 'Family Bear', 151)">Add to Cart</button></article>
                 <article class="card"><div class="img"><img src="images/teddy-bear.jpg" alt="Teddy Bear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Teddy Bear</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Teddy Bear', 51)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/s-candle.jpg" alt="S-Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">S-Candle</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 25</div></div><button class="btn" onclick="addToCart(this, 'S-Candle', 25)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/abstract-face.jpg" alt="Abstract Face" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Abstract Face</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Abstract Face', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/korean-love-sign.jpg" alt="Korean Love Sign" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Korean Love Sign</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Korean Love Sign', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/s-candle.jpg" alt="S-Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">S-Candle</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 25</div></div><button class="btn" onclick="addToCart(this, 'S-Candle', 25)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/abstract-face.jpg" alt="Abstract Face" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Abstract Face</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Abstract Face', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/korean-love-sign.jpg" alt="Korean Love Sign" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Korean Love Sign</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Korean Love Sign', 18)">Add to Cart</button></article>
             </div>
     
             <h3>Pillar Candles</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/rosy-pillar.jpg" alt="Rosy Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Pillar</div><div class="muted">16 Hrs Burn Time</div></div><div class="price">Rs. 91</div></div><button class="btn" onclick="addToCart(this, 'Rosy Pillar', 91)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/crafted-pillar.jpg" alt="Crafted Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Pillar</div><div class="muted">Soya Wax</div></div><div class="price">Rs. 111</div></div><button class="btn" onclick="addToCart(this, 'Crafted Pillar', 111)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/circular-pillar.jpg" alt="Circular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Circular Pillar</div><div class="muted">10 Hrs Burn Time</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Circular Pillar', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/love-pillar.jpg" alt="Love Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Love Pillar</div><div class="muted">Heart Shaped</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Love Pillar', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/rosy-semi-pillar.jpg" alt="Rosy Semi Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Semi Pillar</div><div class="muted">8 Hrs Burn Time</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Rosy Semi Pillar', 45)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/lace-pillar.jpg" alt="Lace Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lace Pillar</div><div class="muted">12 Hrs Burn Time</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Lace Pillar', 60)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/rectangular-pillar.jpg" alt="Rectangular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rectangular Pillar</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Rectangular Pillar', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rosy-pillar.jpg" alt="Rosy Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Pillar</div><div class="muted">16 Hrs Burn Time</div></div><div class="price">Rs. 91</div></div><button class="btn" onclick="addToCart(this, 'Rosy Pillar', 91)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/crafted-pillar.jpg" alt="Crafted Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Crafted Pillar</div><div class="muted">Soya Wax</div></div><div class="price">Rs. 111</div></div><button class="btn" onclick="addToCart(this, 'Crafted Pillar', 111)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/circular-pillar.jpg" alt="Circular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Circular Pillar</div><div class="muted">10 Hrs Burn Time</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Circular Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/love-pillar.jpg" alt="Love Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Love Pillar</div><div class="muted">Heart Shaped</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Love Pillar', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rosy-semi-pillar.jpg" alt="Rosy Semi Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rosy Semi Pillar</div><div class="muted">8 Hrs Burn Time</div></div><div class="price">Rs. 45</div></div><button class="btn" onclick="addToCart(this, 'Rosy Semi Pillar', 45)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/lace-pillar.jpg" alt="Lace Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lace Pillar</div><div class="muted">12 Hrs Burn Time</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Lace Pillar', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/rectangular-pillar.jpg" alt="Rectangular Pillar" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Rectangular Pillar</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Rectangular Pillar', 65)">Add to Cart</button></article>
             </div>
     
             <h3>Floral Collection</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/peony-flower.jpg" alt="Peony Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Peony Flower</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 90</div></div><button class="btn" onclick="addToCart(this, 'Peony Flower', 90)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/lotus-candle.jpg" alt="Lotus" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lotus Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Lotus Candle', 51)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/sun-flower.jpg" alt="Sun Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Sun Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Sun Flower', 60)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/nut-flower.jpg" alt="Nut Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Nut Flower</div><div class="muted">15 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Nut Flower', 65)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/blossom-flower.jpg" alt="Blossom Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Blossom Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Blossom Flower', 55)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/basket.jpg" alt="Basket Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Basket Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Basket Candle', 75)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/heart-linear.jpg" alt="Heart Linear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Heart Linear</div><div class="muted">Parafin wax</div></div><div class="price">Rs. 21</div></div><button class="btn" onclick="addToCart(this, 'Heart Linear', 21)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/peony-flower.jpg" alt="Peony Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Peony Flower</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 90</div></div><button class="btn" onclick="addToCart(this, 'Peony Flower', 90)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/lotus-candle.jpg" alt="Lotus" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Lotus Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 51</div></div><button class="btn" onclick="addToCart(this, 'Lotus Candle', 51)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/sun-flower.jpg" alt="Sun Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Sun Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 60</div></div><button class="btn" onclick="addToCart(this, 'Sun Flower', 60)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/nut-flower.jpg" alt="Nut Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Nut Flower</div><div class="muted">15 Hrs Burn Time</div></div><div class="price">Rs. 65</div></div><button class="btn" onclick="addToCart(this, 'Nut Flower', 65)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/blossom-flower.jpg" alt="Blossom Flower" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Blossom Flower</div><div class="muted">Paraffin Wax</div></div><div class="price">Rs. 55</div></div><button class="btn" onclick="addToCart(this, 'Blossom Flower', 55)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/basket.jpg" alt="Basket Candle" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Basket Candle</div><div class="muted">Pure Soya Wax</div></div><div class="price">Rs. 75</div></div><button class="btn" onclick="addToCart(this, 'Basket Candle', 75)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/heart-linear.jpg" alt="Heart Linear" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Heart Linear</div><div class="muted">Parafin wax</div></div><div class="price">Rs. 21</div></div><button class="btn" onclick="addToCart(this, 'Heart Linear', 21)">Add to Cart</button></article>
             </div>
             
             <h3>Sweet Treats Collection</h3>
             <div class="products">
-                <article class="card"><div class="img"><img src="images/ladoo-candle.jpg" alt="Ladoo" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Ladoo Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Ladoo Candle', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/kaju-katli-candle.jpg" alt="Kaju Katli" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Kaju Katli Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Kaju Katli Candle', 15)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/gujiya-candle.jpg" alt="Gujiya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Gujiya Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Gujiya Candle', 18)">Add to Cart</button></article>
-                <article class="card"><div class="img"><img src="images/imarti-candle.jpg" alt="Imarti" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Imarti Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Imarti Candle', 15)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/ladoo-candle.jpg" alt="Ladoo" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Ladoo Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Ladoo Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/kaju-katli-candle.jpg" alt="Kaju Katli" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Kaju Katli Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Kaju Katli Candle', 15)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/gujiya-candle.jpg" alt="Gujiya" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Gujiya Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 18</div></div><button class="btn" onclick="addToCart(this, 'Gujiya Candle', 18)">Add to Cart</button></article>
+                <article class="card"><div class="img"><img src="/images/imarti-candle.jpg" alt="Imarti" loading="lazy"></div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:800">Imarti Candle</div><div class="muted">Scented Wax</div></div><div class="price">Rs. 15</div></div><button class="btn" onclick="addToCart(this, 'Imarti Candle', 15)">Add to Cart</button></article>
             </div>
             
             <h3>Jars, Hampers & Essentials</h3>
@@ -423,7 +499,7 @@
             <h2>Verify Your Email</h2>
             <p class="muted" style="text-align: center; font-size: 0.9em;">An OTP has been sent to <strong id="otp-email-display"></strong>. Please enter it below.</p>
             <form id="verify-form">
-                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required /></div>
+                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required placeholder="e.g. 123456" /></div>
                 <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Verify & Sign Up</button>
             </form>
           </div>
@@ -442,7 +518,7 @@
             <h2>Reset Password</h2>
             <p class="muted" style="text-align: center; font-size: 0.9em;">Enter the OTP from your email and your new password.</p>
             <form id="reset-form">
-                <div class="form-group"><label for="reset-otp">OTP Code</label><input type="text" id="reset-otp" class="news-input" required /></div>
+                <div class="form-group"><label for="reset-otp">OTP Code</label><input type="text" id="reset-otp" class="news-input" required placeholder="e.g. 123456" /></div>
                 <div class="form-group"><label for="reset-password">New Password</label><input type="password" id="reset-password" class="news-input" minlength="6" required /></div>
                 <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Reset Password</button>
             </form>
@@ -530,365 +606,209 @@
   <div id="toast"></div>
 
 </body>
-
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      
-      const cards = document.querySelectorAll('.card');
-      cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.05}s`;
-      });
+document.addEventListener('DOMContentLoaded', () => {
 
-      const getElement = id => document.getElementById(id);
-      const showToast = (message, isError = false) => {
+    // --- 1. CONFIGURATION & HELPERS ---
+    const API_URL = 'https://api.jovialflames.com/api';
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv';
+
+    const getElement = id => document.getElementById(id);
+
+    const showToast = (message, isError = false) => {
         const toast = getElement("toast");
         toast.textContent = message;
-        toast.className = isError ? "error" : "success";
-        toast.classList.add("show");
+        toast.className = isError ? "error show" : "success show";
         setTimeout(() => toast.classList.remove("show"), 3000);
-      };
+    };
 
-      // --- Modal Management ---
-      const authModal = getElement("auth-modal");
-      const policyModal = getElement("policy-modal");
-      const trackingModal = getElement("tracking-modal");
-      const modalViews = ['login-view', 'signup-view', 'verify-view', 'forgot-view', 'reset-view'];
-      
-      window.openAuthModal = (formType) => { authModal.style.display = "grid"; updateAuthModalView(formType); };
-      window.closeAuthModal = () => { authModal.style.display = "none"; };
-      window.openPolicyModal = (type) => { getElement('policy-title').textContent = policyData[type].title; getElement('policy-content').innerHTML = policyData[type].content; policyModal.style.display = 'grid'; };
-      window.closePolicyModal = () => { policyModal.style.display = 'none'; };
-      window.openTrackingModal = () => { trackingModal.style.display = 'grid'; };
-      window.closeTrackingModal = () => { trackingModal.style.display = 'none'; };
+    const apiCall = async (method, endpoint, body = null, button = null) => {
+        const originalText = button ? button.textContent : null;
+        if (button) { button.disabled = true; button.textContent = 'Processing...'; }
 
-      window.updateAuthModalView = (viewName) => {
-          modalViews.forEach(viewId => {
-              getElement(viewId).style.display = viewId.startsWith(viewName) ? 'block' : 'none';
-          });
-      };
-      
-      const policyData = {
-          privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us. It is Jovial Flames' policy to respect your privacy regarding any information we may collect from you across our website.</p><p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent...</p>` },
-          return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames.</p><p><strong>Returns:</strong> Due to the nature of our products, we do not accept returns or exchanges. All sales are final...</p>` }
-      };
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem('jovialFlamesToken');
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      // --- Authentication Logic ---
-      const authButtons = getElement("auth-buttons");
-      const userButtons = getElement("user-buttons");
-      const userGreeting = getElement("user-greeting");
-      
-      let mockUsers = JSON.parse(localStorage.getItem('mockUsers')) || [];
-      const saveUsers = () => localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
-      
-      let pendingUser = null;
-      let emailToReset = null;
+        try {
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
 
-      const updateUserUI = (user) => {
-        if (user) {
-          authButtons.style.display = "none";
-          userButtons.style.display = "flex";
-          userGreeting.textContent = `Hello, ${user.name.split(' ')[0]}!`;
-        } else {
-          authButtons.style.display = "flex";
-          userButtons.style.display = "none";
-          userGreeting.textContent = "";
+            const response = await fetch(API_URL + endpoint, config);
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = data.errors ? data.errors[0].msg : data.message;
+                throw new Error(errorMessage || 'An unknown error occurred.');
+            }
+            return data;
+        } catch (error) {
+            showToast(error.message, true);
+            throw error;
+        } finally {
+            if (button) { button.disabled = false; button.textContent = originalText; }
         }
-      };
+    };
 
-      const checkAuthState = () => {
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-        updateUserUI(loggedInUser);
-      };
+    // --- 2. UI SETUP ---
+    getElement("darkToggle").addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+        localStorage.setItem('dark-mode', document.body.classList.contains('dark'));
+    });
+    const loadDarkMode = () => {
+        if (localStorage.getItem('dark-mode') === 'true') {
+            document.body.classList.add('dark');
+            getElement("darkToggle").textContent = "☀️";
+        }
+    };
 
-      // Signup Flow
-      getElement('signup-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = getElement('signup-name').value.trim();
-        const email = getElement('signup-email').value.trim();
-        const password = getElement('signup-password').value;
-        if (password.length < 6) return showToast("Password must be at least 6 characters.", true);
-        if (mockUsers.some(user => user.email === email)) return showToast("This email is already registered.", true);
-        
-        pendingUser = { name, email, password, orders: [] };
-        const signupButton = e.target.querySelector('button');
-        signupButton.disabled = true;
-        signupButton.textContent = 'Sending...';
+    // --- 3. MODAL MANAGEMENT ---
+    const authModal = getElement("auth-modal");
+    const policyModal = getElement("policy-modal");
+    const trackingModal = getElement("tracking-modal");
+    const modalViews = ['login-view', 'signup-view', 'verify-view', 'forgot-view', 'reset-view'];
 
-        fetch('http://localhost:3001/api/signup-request-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: pendingUser.email })
-        })
-        .then(response => {
-            if (!response.ok) { throw new Error('Network response was not ok'); }
-            return response.json();
-        })
-        .then(data => {
-            showToast(data.message);
-            if (data.message.includes("sent successfully")) {
-                getElement('otp-email-display').textContent = email;
-                updateAuthModalView('verify');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Failed to connect to the server. Is it running?', true);
-        })
-        .finally(() => {
-            signupButton.disabled = false;
-            signupButton.textContent = 'Create Account';
+    window.openAuthModal = (formType) => { authModal.style.display = "grid"; updateAuthModalView(formType); };
+    window.closeAuthModal = () => { authModal.style.display = "none"; };
+    window.openPolicyModal = (type) => { getElement('policy-title').textContent = policyData[type].title; getElement('policy-content').innerHTML = policyData[type].content; policyModal.style.display = 'grid'; };
+    window.closePolicyModal = () => { policyModal.style.display = 'none'; };
+    window.openTrackingModal = () => { trackingModal.style.display = 'grid'; };
+    window.closeTrackingModal = () => { trackingModal.style.display = 'none'; };
+    window.updateAuthModalView = (viewName) => {
+        modalViews.forEach(viewId => {
+            getElement(viewId).style.display = viewId.startsWith(viewName) ? 'block' : 'none';
         });
-      });
+    };
+    const policyData = {
+        privacy: { title: "Privacy Policy", content: `<p>Your privacy is important to us. We collect personal information such as your name, email, and address solely for the purpose of processing your orders and improving your shopping experience. We do not share your data with third parties without your consent.</p>` },
+        return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames. If you are not entirely satisfied with your purchase, we're here to help. You have 7 calendar days to return an item from the date you received it. To be eligible for a return, your item must be unused and in the same condition that you received it.</p>` }
+    };
 
-      // Verification Flow
-      getElement('verify-form').addEventListener('submit', (e) => {
+    // --- 4. AUTHENTICATION LOGIC ---
+    const authButtons = getElement("auth-buttons");
+    const userButtons = getElement("user-buttons");
+    const userGreeting = getElement("user-greeting");
+    let pendingUserDetails = null;
+    let emailToReset = null;
+
+    const updateUserUI = (user) => {
+        if (user) {
+            authButtons.style.display = "none";
+            userButtons.style.display = "flex";
+            userGreeting.textContent = `Hello, ${user.name.split(' ')[0]}!`;
+        } else {
+            authButtons.style.display = "grid";
+            userButtons.style.display = "none";
+            userGreeting.textContent = "";
+        }
+    };
+    const checkAuthState = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (user) updateUserUI(user);
+    };
+
+    // FIXED: Re-added the missing event listener for the signup form.
+    getElement('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const button = e.target.querySelector('button');
+        pendingUserDetails = {
+            name: getElement('signup-name').value.trim(),
+            email: getElement('signup-email').value.trim(),
+            password: getElement('signup-password').value
+        };
+        try {
+            await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email }, button);
+            showToast(`OTP sent to ${pendingUserDetails.email}`);
+            getElement('otp-email-display').textContent = pendingUserDetails.email;
+            updateAuthModalView('verify');
+        } catch (error) { /* Handled by apiCall */ }
+    });
+
+    getElement('verify-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
-        const verifyButton = e.target.querySelector('button');
-        verifyButton.disabled = true;
-        verifyButton.textContent = 'Verifying...';
+        try {
+            await apiCall('POST', '/auth/register', { ...pendingUserDetails, otp }, button);
+            showToast("Account created! Please log in.");
+            updateAuthModalView('login');
+            pendingUserDetails = null;
+        } catch (error) { /* Handled by apiCall */ }
+    });
 
-        const userData = { ...pendingUser, otp };
-
-        fetch('http://localhost:3001/api/signup-verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === "User created successfully.") {
-                showToast(data.message, false);
-                mockUsers.push(pendingUser);
-                saveUsers();
-                localStorage.setItem('loggedInUser', JSON.stringify(pendingUser));
-                closeAuthModal();
-                updateUserUI(pendingUser);
-                pendingUser = null;
-            } else {
-                showToast(data.message, true);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Failed to connect to the server.', true);
-        })
-        .finally(() => {
-            verifyButton.disabled = false;
-            verifyButton.textContent = 'Verify & Sign Up';
-        });
-      });
-      
-      // Login Flow
-      getElement('login-form').addEventListener('submit', (e) => {
+    getElement('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const button = e.target.querySelector('button');
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
-        const user = mockUsers.find(u => u.email === email && u.password === password);
-        if (user) {
-          localStorage.setItem('loggedInUser', JSON.stringify(user));
-          showToast("Logged in successfully!");
-          closeAuthModal();
-          updateUserUI(user);
-        } else {
-          showToast("Invalid email or password.", true);
-        }
-      });
+        try {
+            const data = await apiCall('POST', '/auth/login', { email, password }, button);
+            localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
+            localStorage.setItem('jovialFlamesToken', data.token);
+            updateUserUI(data.user);
+            showToast("Logged in successfully!");
+            closeAuthModal();
+        } catch (error) { /* Handled by apiCall */ }
+    });
 
-      // Forgot Password Flow
-      getElement('forgot-form').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const email = getElement('forgot-email').value.trim();
-          emailToReset = email;
-          const forgotButton = e.target.querySelector('button');
-          forgotButton.disabled = true;
-          forgotButton.textContent = 'Sending...';
+    getElement('forgot-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button');
+        emailToReset = getElement('forgot-email').value.trim();
+        try {
+            const data = await apiCall('POST', '/auth/forgot-password', { email: emailToReset }, button);
+            showToast(data.message);
+            updateAuthModalView('reset');
+        } catch (error) { emailToReset = null; }
+    });
 
-          fetch('http://localhost:3001/api/forgot-password-request-otp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email })
-          })
-          .then(response => response.json())
-          .then(data => {
-              showToast(data.message);
-              updateAuthModalView('reset');
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              showToast('Failed to connect to the server.', true);
-          })
-          .finally(() => {
-              forgotButton.disabled = false;
-              forgotButton.textContent = 'Send OTP';
-          });
-      });
+    getElement('reset-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button');
+        const otp = getElement('reset-otp').value;
+        const newPassword = getElement('reset-password').value;
+        try {
+            await apiCall('POST', '/auth/reset-password', { email: emailToReset, otp, newPassword }, button);
+            showToast("Password has been reset successfully. Please log in.");
+            emailToReset = null;
+            updateAuthModalView('login');
+        } catch (error) { /* Handled by apiCall */ }
+    });
 
-      // Reset Password Flow
-      getElement('reset-form').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const otp = getElement('reset-otp').value;
-          const newPassword = getElement('reset-password').value;
-          if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
-
-          const resetButton = e.target.querySelector('button');
-          resetButton.disabled = true;
-          resetButton.textContent = 'Resetting...';
-
-          fetch('http://localhost:3001/api/reset-password-verify-otp', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: emailToReset, otp, newPassword })
-          })
-          .then(response => response.json())
-          .then(data => {
-              showToast(data.message);
-              if (data.message === "Password has been reset successfully.") {
-                  const userIndex = mockUsers.findIndex(u => u.email === emailToReset);
-                  if (userIndex !== -1) {
-                      mockUsers[userIndex].password = newPassword;
-                      saveUsers();
-                  }
-                  emailToReset = null;
-                  updateAuthModalView('login');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              showToast('Failed to connect to the server.', true);
-          })
-          .finally(() => {
-              resetButton.disabled = false;
-              resetButton.textContent = 'Reset Password';
-          });
-      });
-
-      window.logoutUser = () => {
-        localStorage.removeItem('loggedInUser');
+    window.logoutUser = () => {
+        localStorage.removeItem('jovialFlamesUser');
+        localStorage.removeItem('jovialFlamesToken');
         showToast("Logged out successfully.");
         updateUserUI(null);
-      };
-
-      // --- Order & Tracking Logic ---
-      const ordersSidebar = getElement("ordersSidebar");
-      const orderList = getElement("orderList");
-
-      window.toggleOrders = () => {
-        ordersSidebar.classList.toggle("open");
-        if (ordersSidebar.classList.contains("open")) { renderOrders(); }
-      };
-      
-      window.trackOrderById = () => {
-          const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
-          if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
-          const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-          if (!loggedInUser || !loggedInUser.orders) return showToast("No orders found for this account.", true);
-          const order = loggedInUser.orders.find(o => o.id === orderIdToTrack);
-          if (order) {
-            showTrackingDetails(orderIdToTrack);
-          } else {
-            showToast(`Order #${orderIdToTrack} not found.`, true);
-          }
-      };
-
-      window.showTrackingDetails = (orderId) => {
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-        if (!loggedInUser) return;
-        const order = loggedInUser.orders.find(o => o.id === orderId);
-        if (!order) return;
-        
-        getElement('tracking-order-id').textContent = order.id;
-        const trackingDetailsContainer = getElement('tracking-details');
-        
-        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
-        const currentStatusIndex = statuses.indexOf(order.status);
-
-        let timelineHTML = '<ul class="tracking-timeline">';
-        statuses.forEach((status, index) => {
-            const isCompleted = index < currentStatusIndex;
-            const isActive = index === currentStatusIndex;
-            let className = '';
-            if (isActive) className = 'active';
-            if (isCompleted) className = 'completed';
-
-            timelineHTML += `<li class="${className}">
-                <div class="status">${status}</div>
-                ${(isActive || isCompleted) ? `<div class="time">${new Date(order.lastUpdate).toLocaleString()}</div>` : ''}
-            </li>`;
-        });
-        timelineHTML += '</ul>';
-
-        trackingDetailsContainer.innerHTML = timelineHTML;
-        openTrackingModal();
-      };
-      
-      const simulateTrackingUpdate = (orderId) => {
-          const statuses = ["Packed", "Shipped", "Out for Delivery", "Delivered"];
-          let statusIndex = 0;
-
-          const interval = setInterval(() => {
-            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if(!loggedInUser) { clearInterval(interval); return; }
-            const userIndex = mockUsers.findIndex(u => u.email === loggedInUser.email);
-            if(userIndex === -1) { clearInterval(interval); return; }
-            const orderIndex = mockUsers[userIndex].orders.findIndex(o => o.id === orderId);
-
-            if (statusIndex >= statuses.length || orderIndex === -1) {
-              clearInterval(interval);
-              return;
-            }
-
-            mockUsers[userIndex].orders[orderIndex].status = statuses[statusIndex];
-            mockUsers[userIndex].orders[orderIndex].lastUpdate = Date.now();
-            saveUsers();
-            localStorage.setItem('loggedInUser', JSON.stringify(mockUsers[userIndex]));
-
-            if(trackingModal.style.display === 'grid' && getElement('tracking-order-id').textContent === orderId) {
-                showTrackingDetails(orderId);
-            }
-            
-            showToast(`Order #${orderId} is now: ${statuses[statusIndex]}`);
-            statusIndex++;
-          }, 10000);
-      };
-
-      const renderOrders = () => {
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-        if (!loggedInUser || !loggedInUser.orders || loggedInUser.orders.length === 0) {
-          orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
-          return;
+        if (ordersSidebar.classList.contains("open")) {
+            ordersSidebar.classList.remove("open");
         }
-        orderList.innerHTML = [...loggedInUser.orders].reverse().map(order => {
-          return `<div class="order-item">
-              <div>
-                <strong>Order: #${order.id}</strong>
-                <div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div>
-                <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total Paid: Rs. ${order.grandTotal}</div>
-              </div>
-              <button class="btn secondary" style="padding: 0.4rem 0.8rem;" onclick="showTrackingDetails('${order.id}')">Track</button>
-            </div>`;
-        }).join('');
-      };
+    };
 
-      // --- Misc UI & Cart Logic ---
-      window.handleSubmit = (e) => { e.preventDefault(); showToast(`Thanks, ${getElement('name').value}! We'll be in touch.`); e.target.reset(); };
-      window.subscribe = () => { const email = getElement('newsletterEmail').value; if (!email || !email.includes('@')) return showToast("Please enter a valid email.", true); showToast(`Discount code sent to ${email}!`); getElement('newsletterEmail').value = ""; };
-      getElement("darkToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙"; localStorage.setItem('dark-mode', document.body.classList.contains('dark')); });
+    // --- 5. CART LOGIC ---
+    let cart = [];
+    const MIN_ORDER_VALUE = 199;
+    const cartSidebar = getElement("cartSidebar");
+    const cartItemsContainer = getElement("cartItems");
+    // FIXED: Corrected corrupted variable definition
+    const cartSummaryContainer = getElement("cartSummary");
+    const cartCountBadge = getElement("cartCountBadge");
+    const minOrderNotice = getElement("minOrderNotice");
 
-      let cart = [];
-      const MIN_ORDER_VALUE = 199;
-      const cartSidebar = getElement("cartSidebar");
-      const cartItemsContainer = getElement("cartItems");
-      const cartSummaryContainer = getElement("cartSummary");
-      const cartCountBadge = getElement("cartCountBadge");
-      const minOrderNotice = getElement("minOrderNotice");
+    const loadCart = () => {
+        const savedCart = localStorage.getItem('jovialFlamesCart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+            renderCart();
+        }
+    };
 
-      const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
-      const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
+    const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
 
-      window.addToCart = (button, name, price) => {
+    window.addToCart = (button, name, price) => {
         const existingItem = cart.find(item => item.name === name);
-        if (existingItem) { existingItem.quantity++; } 
+        if (existingItem) { existingItem.quantity++; }
         else { cart.push({ name, price: Number(price), quantity: 1 }); }
         showToast(`${name} added to cart!`);
         renderCart();
@@ -898,111 +818,147 @@
         button.textContent = "Added ✔️";
         button.disabled = true;
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
-      };
+    };
 
-      const renderCart = () => {
+    window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
+    window.toggleCart = () => cartSidebar.classList.toggle("open");
+
+    // FIXED: Corrected typo from "constr enderCart" to "const renderCart"
+    const renderCart = () => {
         let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
         if (cart.length === 0) {
-          cartItemsContainer.innerHTML = "<div class='muted' style='text-align:center; padding: 1rem;'>Your cart is empty</div>";
-          cartSummaryContainer.innerHTML = "";
-          cartCountBadge.style.display = 'none';
-          minOrderNotice.style.display = 'none';
-          getElement('checkout-section').style.display = 'none';
-          return;
+            cartItemsContainer.innerHTML = "<div class='muted' style='text-align:center; padding: 1rem;'>Your cart is empty</div>";
+            cartSummaryContainer.innerHTML = "";
+            cartCountBadge.style.display = 'none';
+            getElement('checkout-section').style.display = 'none';
+            return;
         }
-        
-        cartItemsContainer.innerHTML = cart.map((item, index) => {
-            const itemTotal = item.price * item.quantity;
-            return `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${itemTotal}</div></div><button class="remove-btn" onclick="removeItem(${index})" aria-label="Remove ${item.name}">×</button></div>`;
-        }).join('');
-
+        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
         let shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
         let shippingText = (shippingCharges > 0) ? `Rs. ${shippingCharges}` : `Free`;
         const grandTotal = subtotal + shippingCharges;
-
-        cartSummaryContainer.innerHTML = `
-          <div><span>Subtotal</span> <span>Rs. ${subtotal}</span></div>
-          <div><span>Shipping</span> <span>${shippingText}</span></div>
-          <div class="grand-total"><span>Grand Total</span> <span>Rs. ${grandTotal}</span></div>
-        `;
+        cartSummaryContainer.innerHTML = `<div><span>Subtotal</span> <span>Rs. ${subtotal}</span></div><div><span>Shipping</span> <span>${shippingText}</span></div><div class="grand-total"><span>Grand Total</span> <span>Rs. ${grandTotal}</span></div>`;
         cartCountBadge.textContent = totalItems;
         cartCountBadge.style.display = 'grid';
-
         if (subtotal < MIN_ORDER_VALUE) {
-          minOrderNotice.textContent = `Minimum order is Rs. ${MIN_ORDER_VALUE}. Add Rs. ${MIN_ORDER_VALUE - subtotal} more.`;
-          minOrderNotice.style.display = 'block';
-          getElement('checkout-section').style.display = 'none';
+            minOrderNotice.textContent = `Minimum order is Rs. ${MIN_ORDER_VALUE}. Add Rs. ${MIN_ORDER_VALUE - subtotal} more.`;
+            minOrderNotice.style.display = 'block';
+            getElement('checkout-section').style.display = 'none';
         } else {
-          minOrderNotice.style.display = 'none';
-          getElement('checkout-section').style.display = 'block';
+            minOrderNotice.style.display = 'none';
+            getElement('checkout-section').style.display = 'block';
         }
-      };
+    };
 
-      window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
-      window.toggleCart = () => cartSidebar.classList.toggle("open");
+    // --- 6. ORDER & PAYMENT LOGIC ---
+    const ordersSidebar = getElement("ordersSidebar");
+    const orderList = getElement("orderList");
 
-      window.placeOrder = (paymentMethod) => {
-        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-        if (!loggedInUser) {
-          toggleCart();
-          openAuthModal('login');
-          return showToast("Please log in to place an order.", true);
-        }
-
-        const name = getElement("custName").value.trim(), phone = getElement("custPhone").value.trim(), address = getElement("custAddr").value.trim(), pincode = getElement("custPin").value.trim();
-        if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
+    window.placeOrder = async (paymentMethod, event) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
         
+        const customerName = getElement("custName").value.trim();
+        const customerPhone = getElement("custPhone").value.trim();
+        const deliveryAddress = getElement("custAddr").value.trim();
+        const pincode = getElement("custPin").value.trim();
+        if (!customerName || !customerPhone || !deliveryAddress || !pincode) return showToast("Please fill in all delivery details.", true);
+        
+        const button = event.target;
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        if (subtotal < MIN_ORDER_VALUE) return showToast(`Minimum order of Rs. ${MIN_ORDER_VALUE} is required.`, true);
+        const shipping = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
+        const grandTotal = subtotal + shipping;
 
-        const shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
-        const grandTotal = subtotal + shippingCharges;
-        
-        const orderId = `JF-${Date.now().toString().slice(-6)}`;
-        const newOrder = { 
-            id: orderId, 
-            date: new Date().toLocaleDateString(), 
-            items: [...cart], 
-            grandTotal, 
-            paymentMethod,
-            status: "Order Placed",
-            lastUpdate: Date.now()
+        const orderDetails = {
+            id: 'JF' + Date.now().toString().slice(-6),
+            items: cart,
+            grandTotal: grandTotal,
+            customerName, customerPhone, deliveryAddress, pincode
         };
         
-        if (paymentMethod === 'online') {
-            return showToast("Online payment is not yet available. Please choose Pay on Delivery.", true);
-        }
-        
-        const userIndex = mockUsers.findIndex(u => u.email === loggedInUser.email);
-        if (userIndex !== -1) {
-            if (!mockUsers[userIndex].orders) mockUsers[userIndex].orders = [];
-            mockUsers[userIndex].orders.push(newOrder);
-            saveUsers();
-            localStorage.setItem('loggedInUser', JSON.stringify(mockUsers[userIndex]));
-        }
-        showToast(`Thank you, ${name.split(' ')[0]}! Your order #${orderId} is placed.`);
-        cart.length = 0;
-        saveCart();
-        renderCart();
-        ['custName', 'custPhone', 'custAddr', 'custPin'].forEach(id => getElement(id).value = "");
-        toggleCart();
-        
-        simulateTrackingUpdate(orderId);
-      };
+        const placeFinalOrder = async (paymentInfo) => {
+            try {
+                const data = await apiCall('POST', '/orders/place', { orderDetails, paymentDetails: paymentInfo }, button);
+                showToast(`Order #${data.orderId} placed successfully!`);
+                cart = [];
+                saveCart();
+                renderCart();
+                toggleCart();
+            } catch(e) { /* Handled */ }
+        };
 
-      // --- Initial Load ---
-      const loadDarkMode = () => {
-        if (localStorage.getItem('dark-mode') === 'true') {
-            document.body.classList.add('dark');
-            getElement("darkToggle").textContent = "☀️";
+        if (paymentMethod === 'cod') {
+            await placeFinalOrder({ method: 'cod' });
+            return;
         }
-      };
-      
-      loadDarkMode();
-      loadCart();
-      checkAuthState();
-    });
+
+        if (paymentMethod === 'online') {
+            try {
+                const orderData = await apiCall('POST', '/orders/create-razorpay-order', { amount: grandTotal }, button);
+                const options = {
+                    key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
+                    handler: async (response) => {
+                        await placeFinalOrder({ method: 'online', verification: response });
+                    },
+                    prefill: { name: user.name, email: user.email, contact: customerPhone }, theme: { color: "#d97706" }
+                };
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', (response) => showToast('Payment failed: ' + response.error.description, true));
+                rzp.open();
+            } catch(error) { /* Handled */ }
+        }
+    };
+    
+    window.toggleOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user) { openAuthModal('login'); return showToast("Please log in to view your orders.", true); }
+        ordersSidebar.classList.toggle("open");
+        if (ordersSidebar.classList.contains("open")) renderOrders();
+    };
+
+    const renderOrders = async () => {
+        try {
+            const orders = await apiCall('GET', '/orders/myorders');
+            if (!orders || orders.length === 0) {
+                orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+                return;
+            }
+            orderList.innerHTML = orders.map(order => `
+                <div class="order-item">
+                    <div>
+                        <strong>Order: #${order.orderId}</strong>
+                        <div class="muted" style="font-size:0.8em;">Placed on: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
+                        <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
+                        <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div>
+                    </div>
+                </div>`
+            ).join('');
+        } catch (error) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>Could not load orders.</div>`;
+        }
+    };
+    
+    window.handleSubmit = (e) => {
+        e.preventDefault();
+        const name = getElement('name').value;
+        showToast(`Thanks, ${name}! We'll be in touch.`);
+        e.target.reset();
+    };
+
+    window.subscribe = () => {
+        const email = getElement('newsletterEmail').value;
+        if (!email || !email.includes('@')) return showToast("Please enter a valid email.", true);
+        showToast(`Discount code sent to ${email}!`);
+        getElement('newsletterEmail').value = "";
+    };
+
+    // --- 7. RUN ON PAGE LOAD ---
+    loadDarkMode();
+    loadCart();
+    checkAuthState();
+});
 </script>
+    
+
 </html>
