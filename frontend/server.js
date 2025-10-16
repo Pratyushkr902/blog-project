@@ -84,7 +84,7 @@ const generateToken = (id) => {
 
 
 // ✅ CORRECTED: Added /auth prefix to all routes
-app.post('/api/auth/request-otp', [body('email').isEmail()], async (req, res) => {
+app.post('/auth/request-otp', [body('email').isEmail()], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   const { email } = req.body;
@@ -94,7 +94,7 @@ app.post('/api/auth/request-otp', [body('email').isEmail()], async (req, res) =>
   res.status(200).json({ message: 'OTP sent successfully.' });
 });
 
-app.post('/api/auth/register', [
+app.post('/auth/register', [
   body('name').notEmpty(),
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
@@ -111,7 +111,7 @@ app.post('/api/auth/register', [
 });
  
 
-app.post('/api/auth/login', [body('email').isEmail(), body('password').notEmpty()], async (req, res) => {
+app.post('/auth/login', [body('email').isEmail(), body('password').notEmpty()], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   const { email, password } = req.body;
@@ -124,7 +124,7 @@ app.post('/api/auth/login', [body('email').isEmail(), body('password').notEmpty(
   }
 });
 
-app.post('/api/auth/forgot-password', [body('email').isEmail()], async (req, res) => {
+app.post('/auth/forgot-password', [body('email').isEmail()], async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (user) {
@@ -133,7 +133,7 @@ app.post('/api/auth/forgot-password', [body('email').isEmail()], async (req, res
     res.status(200).json({ message: 'If an account exists, an OTP has been sent.' });
 });
 
-app.post('/api/auth/reset-password', [
+app.post('/auth/reset-password', [
     body('email').isEmail(),
     body('otp').isLength({ min: 6, max: 6 }),
     body('newPassword').isLength({ min: 6 })
