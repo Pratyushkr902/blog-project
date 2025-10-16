@@ -610,9 +610,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
-    const API_URL = 'https://api.jovialflames.com/api';
-    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Remember to use a test key for development
 
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Remember to use a test key for development
+const API_BASE_URL = 'https://localhost:3001/api'
     const getElement = id => document.getElementById(id);
 
     const showToast = (message, isError = false) => {
