@@ -746,46 +746,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
-       // --- Get the form element once ---
-const loginForm = getElement('login-form');
-
-// NEW: Check if the form actually exists before trying to use it.
-// This prevents the "Cannot read properties of null" error.
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Prevent the page from reloading
-    
-    const button = e.target.querySelector('button');
-    const email = getElement('login-email').value.trim();
-    const password = getElement('login-password').value;
-
-    try {
-      // Call the API to log the user in
-      const data = await apiCall('/api/login', { email, password }, button);
-
-      // NEW: Safely check if the server's response contains the expected user data and token.
-      if (data && data.user && data.token) {
-        // --- Success Case ---
-        // Store user info and token in the browser's local storage
-        localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
-        localStorage.setItem('jovialFlamesToken', data.token);
-        
-        // Update the UI to show the user's name
-        updateUserUI(data.user);
-        
-        // Show a success message and close the login modal
-        showToast("Logged in successfully!");
-        closeAuthModal();
-      } else {
-        // Handle cases where the API call succeeded but didn't return the expected data
-        showToast("Login failed. Please try again.", true);
-      }
-    } catch (error) {
-      // This block is intentionally empty because the 'apiCall' helper function
-      // already handles showing the error toast to the user.
-    }
-  });
-}
+        try {
+            const data = await apiCall('/api/login', { email, password }, button);
+            localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
+            localStorage.setItem('jovialFlamesToken', data.token);
+            showToast(`Welcome back, ${data.user.name.split(' ')[0]}!`);
+            updateUserUI(data.user);
+            closeAuthModal();
+        } catch (error) { /* Handled by apiCall */ }
+    });
     getElement('forgot-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
