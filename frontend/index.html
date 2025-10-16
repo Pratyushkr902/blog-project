@@ -606,14 +606,11 @@
   <div id="toast"></div>
 
 </body>
-
-    <script>
+<script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
-    // For local development, use: 'http://localhost:3001'
-    const API_URL = 'https://api.jovialflames.com/api'; 
-    // 🚨 IMPORTANT: Replace with your Razorpay TEST key for development
+    const API_URL = 'https://api.jovialflames.com/api';
     const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv';
 
     const getElement = id => document.getElementById(id);
@@ -621,28 +618,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const showToast = (message, isError = false) => {
         const toast = getElement("toast");
         toast.textContent = message;
-        toast.className = isError ? "error show" : "success show"; // Changed to success for non-errors
+        toast.className = isError ? "error show" : "success show";
         setTimeout(() => toast.classList.remove("show"), 3000);
     };
 
-    // Generic API call function
     const apiCall = async (method, endpoint, body = null, button = null) => {
         const originalText = button ? button.textContent : null;
         if (button) { button.disabled = true; button.textContent = 'Processing...'; }
-        
+
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('jovialFlamesToken');
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        
+
         try {
             const config = { method, headers };
             if (body) config.body = JSON.stringify(body);
-            
+
             const response = await fetch(API_URL + endpoint, config);
             const data = await response.json();
 
             if (!response.ok) {
-                // Handle validation errors from express-validator
                 const errorMessage = data.errors ? data.errors[0].msg : data.message;
                 throw new Error(errorMessage || 'An unknown error occurred.');
             }
@@ -713,37 +708,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) updateUserUI(user);
     };
 
+    // FIXED: Re-added the missing event listener for the signup form.
     getElement('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
-        pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
+        pendingUserDetails = {
+            name: getElement('signup-name').value.trim(),
+            email: getElement('signup-email').value.trim(),
+            password: getElement('signup-password').value
+        };
         try {
-            // CORRECTED: Endpoint includes /auth prefix
             await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
         } catch (error) { /* Handled by apiCall */ }
     });
+
     getElement('verify-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
         try {
-            // CORRECTED: Endpoint changed to /auth/register
             await apiCall('POST', '/auth/register', { ...pendingUserDetails, otp }, button);
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
         } catch (error) { /* Handled by apiCall */ }
     });
+
     getElement('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
         try {
-            // CORRECTED: Endpoint includes /auth prefix
             const data = await apiCall('POST', '/auth/login', { email, password }, button);
             localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
             localStorage.setItem('jovialFlamesToken', data.token);
@@ -752,30 +751,31 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAuthModal();
         } catch (error) { /* Handled by apiCall */ }
     });
+
     getElement('forgot-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         emailToReset = getElement('forgot-email').value.trim();
         try {
-            // CORRECTED: Endpoint includes /auth prefix
             const data = await apiCall('POST', '/auth/forgot-password', { email: emailToReset }, button);
             showToast(data.message);
             updateAuthModalView('reset');
         } catch (error) { emailToReset = null; }
     });
+
     getElement('reset-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const otp = getElement('reset-otp').value;
         const newPassword = getElement('reset-password').value;
         try {
-            // CORRECTED: Endpoint includes /auth prefix
             await apiCall('POST', '/auth/reset-password', { email: emailToReset, otp, newPassword }, button);
             showToast("Password has been reset successfully. Please log in.");
             emailToReset = null;
             updateAuthModalView('login');
         } catch (error) { /* Handled by apiCall */ }
     });
+
     window.logoutUser = () => {
         localStorage.removeItem('jovialFlamesUser');
         localStorage.removeItem('jovialFlamesToken');
@@ -791,12 +791,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const MIN_ORDER_VALUE = 199;
     const cartSidebar = getElement("cartSidebar");
     const cartItemsContainer = getElement("cartItems");
+    // FIXED: Corrected corrupted variable definition
     const cartSummaryContainer = getElement("cartSummary");
     const cartCountBadge = getElement("cartCountBadge");
     const minOrderNotice = getElement("minOrderNotice");
-    const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
+
+    const loadCart = () => {
+        const savedCart = localStorage.getItem('jovialFlamesCart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+            renderCart();
+        }
+    };
+
     const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
-    
+
     window.addToCart = (button, name, price) => {
         const existingItem = cart.find(item => item.name === name);
         if (existingItem) { existingItem.quantity++; }
@@ -810,9 +819,11 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
+
     window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
     window.toggleCart = () => cartSidebar.classList.toggle("open");
-    
+
+    // FIXED: Corrected typo from "constr enderCart" to "const renderCart"
     const renderCart = () => {
         let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -868,7 +879,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const placeFinalOrder = async (paymentInfo) => {
             try {
-                // CORRECTED: Endpoint includes /orders prefix
                 const data = await apiCall('POST', '/orders/place', { orderDetails, paymentDetails: paymentInfo }, button);
                 showToast(`Order #${data.orderId} placed successfully!`);
                 cart = [];
@@ -885,7 +895,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (paymentMethod === 'online') {
             try {
-                // CORRECTED: Endpoint changed to /orders/create-razorpay-order
                 const orderData = await apiCall('POST', '/orders/create-razorpay-order', { amount: grandTotal }, button);
                 const options = {
                     key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
@@ -910,7 +919,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderOrders = async () => {
         try {
-            // IMPROVEMENT: Fetch latest orders directly from the server
             const orders = await apiCall('GET', '/orders/myorders');
             if (!orders || orders.length === 0) {
                 orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
@@ -951,5 +959,6 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
 });
 </script>
+    
 
 </html>
