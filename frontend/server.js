@@ -1,168 +1,174 @@
-// --- IMPORTS ---
+// Import necessary packages
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables from .env file
 
-// --- INITIALIZATIONS ---
 const app = express();
-const SALT_ROUNDS = 10;
 
 // --- MIDDLEWARE ---
-app.use(cors({
-    origin: process.env.FRONTEND_URL, // Make sure FRONTEND_URL is in your .env
-    credentials: true
-}));
-app.use(express.json());
+app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // Enable parsing of JSON request bodies
 
-// --- DATABASE CONNECTION ---
-mongoose.connect(process.env.MONGO_URI, {
-}).then(() => {
-  console.log('✅ Connected to MongoDB');
-}).catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-  process.exit(1);
-});
+// --- IN-MEMORY DATABASE (FOR DEVELOPMENT ONLY!) ---
+// WARNING: This data will be lost when the server restarts.
+// For production, use a real database like MongoDB, PostgreSQL, etc.
+let users = [];
+let otps = {};
 
-// --- MONGOOSE MODELS ---
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
-}, { timestamps: true });
-
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
-    next();
-});
-
-userSchema.methods.matchPassword = async function(enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-};
-
-const User = mongoose.model('User', userSchema);
-
-const otpSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  code: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now, expires: '10m' }
-});
-const Otp = mongoose.model('Otp', otpSchema);
+const SALT_ROUNDS = 10; // For hashing passwords
 
 // --- NODEMAILER TRANSPORTER ---
+// This uses your Gmail credentials from the .env file to send emails
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
-transporter.verify().then(() => console.log('✅ Email transporter ready')).catch(err => console.error('⚠️ Email transporter error:', err.message));
-
-
-// --- HELPER FUNCTIONS ---
-const sendOtpEmail = async (email, subject, text) => {
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  await Otp.findOneAndUpdate({ email }, { code: otpCode }, { upsert: true, new: true });
-  const mailOptions = { from: `"Jovial Flames" <${process.env.GMAIL_USER}>`, to: email, subject, text: `${text} ${otpCode}\nThis code will expire in 10 minutes.` };
-  await transporter.sendMail(mailOptions);
-  console.log(`OTP sent to ${email}: ${otpCode}`);
-};
-
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-};
-
-
-// --- API ROUTES ---
-// VVV ADD THIS NEW TEST ROUTE VVV
-app.get('/api/auth/test', (req, res) => {
-  res.status(200).send('The test route is working correctly!');
-});
-
-// ✅ CORRECTED: Added /auth prefix to all routes
-app.post('/api/auth/request-otp', [body('email').isEmail()], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-  const { email } = req.body;
-  const existingUser = await User.findOne({ email });
-  if (existingUser) return res.status(400).json({ message: 'User with this email already exists.' });
-  await sendOtpEmail(email, 'Your Jovial Flames Verification Code', 'Welcome! Your OTP is:');
-  res.status(200).json({ message: 'OTP sent successfully.' });
-});
-
-app.post('/api/auth/register', [
-  body('name').notEmpty(),
-  body('email').isEmail(),
-  body('password').isLength({ min: 6 }),
-  body('otp').isLength({ min: 6, max: 6 })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-  const { name, email, password, otp } = req.body;
-  const storedOtp = await Otp.findOne({ email, code: otp });
-  if (!storedOtp) return res.status(400).json({ message: 'Invalid or expired OTP.' });
-  const user = await User.create({ name, email, password });
-  await Otp.deleteOne({ email });
-  res.status(201).json({ _id: user._id, name: user.name, email: user.email, token: generateToken(user._id) });
-});
- 
-const jwt = require('jsonwebtoken');
-app.post('/api/auth/login', [body('email').isEmail(), body('password').notEmpty()], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (user && (await user.matchPassword(password))) {
-    const { password, ...userData } = user.toObject();
-    res.json({ user: userData, token: generateToken(user._id) });
-  } else {
-    res.status(401).json({ message: 'Invalid email or password' });
+    pass: process.env.GMAIL_PASS
   }
 });
 
-app.post('/api/auth/forgot-password', [body('email').isEmail()], async (req, res) => {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (user) {
-        await sendOtpEmail(email, 'Your Password Reset Code', 'Your password reset OTP is:');
+// --- API ROUTES ---
+
+// 1. SIGNUP: Request an OTP
+app.post('/api/signup-request-otp', (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+  if (users.find(u => u.email === email)) {
+    return res.status(400).json({ message: "An account with this email already exists." });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+  otps[email] = { code: otp, expires };
+
+  const mailOptions = {
+    from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: 'Your Jovial Flames Verification Code',
+    text: `Welcome to Jovial Flames! Your One-Time Password (OTP) is: ${otp}\nThis code will expire in 10 minutes.`
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending OTP:", error);
+      return res.status(500).json({ message: "Failed to send OTP. Please try again later." });
     }
-    res.status(200).json({ message: 'If an account exists, an OTP has been sent.' });
+    console.log(`OTP sent to ${email}: ${otp}`);
+    res.status(200).json({ message: "OTP sent successfully to your email." });
+  });
 });
 
-app.post('/api/auth/reset-password', [
-    body('email').isEmail(),
-    body('otp').isLength({ min: 6, max: 6 }),
-    body('newPassword').isLength({ min: 6 })
-], async (req, res) => {
+// 2. SIGNUP: Verify OTP and Create User
+app.post('/api/signup-verify', async (req, res) => {
+  const { name, email, password, otp } = req.body;
+  const storedOtp = otps[email];
+
+  if (!storedOtp) {
+    return res.status(400).json({ message: "OTP not requested or expired. Please sign up again." });
+  }
+  if (Date.now() > storedOtp.expires) {
+    delete otps[email];
+    return res.status(400).json({ message: "OTP has expired. Please try signing up again." });
+  }
+  if (storedOtp.code !== otp) {
+    return res.status(400).json({ message: "Invalid OTP." });
+  }
+
+  // Hash the password before storing it
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  
+  users.push({ name, email, password: hashedPassword, orders: [] });
+  delete otps[email]; // Clean up used OTP
+
+  console.log(`User created successfully: ${email}`);
+  res.status(201).json({ message: "Account created successfully. You can now log in." });
+});
+
+// 3. LOGIN
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = users.find(u => u.email === email);
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found. Please check your email or sign up." });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (isPasswordCorrect) {
+        // In a real app, you would return a JWT (JSON Web Token) here for authentication
+        console.log(`Login successful for: ${email}`);
+        // Return user data (without the password)
+        const { password: _, ...userData } = user;
+        res.status(200).json({ message: "Login successful.", user: userData });
+    } else {
+        res.status(401).json({ message: "Invalid password." });
+    }
+});
+
+// 4. FORGOT PASSWORD: Request an OTP
+app.post('/api/forgot-password-request-otp', (req, res) => {
+    const { email } = req.body;
+    const user = users.find(u => u.email === email);
+    if (!user) {
+        // Send a generic message to prevent exposing which emails are registered
+        return res.status(200).json({ message: "If an account with this email exists, a password reset OTP has been sent." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    otps[email] = { code: otp, expires };
+
+    const mailOptions = {
+        from: `"Jovial Flames" <${process.env.GMAIL_USER}>`,
+        to: email,
+        subject: 'Your Password Reset Code',
+        text: `Your password reset OTP is: ${otp}\nThis code will expire in 10 minutes.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error("Error sending reset OTP:", error);
+        }
+        console.log(`Password reset OTP sent to ${email}`);
+        res.status(200).json({ message: "If an account with this email exists, a password reset OTP has been sent." });
+    });
+});
+
+// 5. FORGOT PASSWORD: Verify OTP and Reset Password
+app.post('/api/reset-password-verify-otp', async (req, res) => {
     const { email, otp, newPassword } = req.body;
-    const storedOtp = await Otp.findOne({ email, code: otp });
-    if (!storedOtp) return res.status(400).json({ message: 'Invalid or expired OTP.' });
-    const user = await User.findOne({ email });
-    user.password = newPassword;
-    await user.save();
-    await Otp.deleteOne({ email });
-    res.status(200).json({ message: 'Password has been reset successfully.' });
-});
+    const storedOtp = otps[email];
 
-// Root route for testing
-app.get('/api', (req, res) => {
-    res.send('Jovial Flames API is running...');
+    if (!storedOtp || Date.now() > storedOtp.expires || storedOtp.code !== otp) {
+        return res.status(400).json({ message: "Invalid or expired OTP." });
+    }
+
+    const userIndex = users.findIndex(u => u.email === email);
+    if (userIndex === -1) {
+        return res.status(404).json({ message: "User not found." }); // Should not happen if OTP is valid
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    users[userIndex].password = hashedPassword;
+    delete otps[email]; // Clean up
+
+    console.log(`Password reset for ${email}`);
+    res.status(200).json({ message: "Password has been reset successfully." });
 });
 
 
 // --- SERVER INITIALIZATION ---
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`🔥 Server is running on http://localhost:${PORT}`);
-});
-// This tells your app what to do when it gets a GET request to the root URL
+
 app.get('/', (req, res) => {
   res.send('Welcome to the Jovial Flames API! Server is running correctly. 🎉');
+});
+
+app.listen(PORT, () => {
+  console.log(`🔥 Server is running on http://localhost:${PORT}`);
 });
