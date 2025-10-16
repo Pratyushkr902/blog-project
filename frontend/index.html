@@ -605,16 +605,106 @@
 
   <div id="toast"></div>
 
+</body>    
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  
+    // --- CONFIGURATION ---
+    const API_URL = 'http://localhost:3001';
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; 
+
+    const productListContainer = getElement('product-list');
+    const searchInput = getElement('searchInput');
+
+    // --- PRODUCT RENDERING ---
+    const renderProducts = (products) => {
+        if (!products || products.length === 0) {
+            productListContainer.innerHTML = `<p class="muted" style="text-align:center;">No products found.</p>`;
+            return;
+        }
+        
+        productListContainer.innerHTML = products.map(product => `
+            <article class="card">
+                <div class="img"><img src="${product.imageUrl}" alt="${product.name}" loading="lazy"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-weight:800">${product.name}</div>
+                        <div class="muted">${product.description || ''}</div>
+                    </div>
+                    <div class="price">Rs. ${product.price}</div>
+                </div>
+                <button class="btn" onclick="addToCart(this, '${product.name}', ${product.price})">Add to Cart</button>
+            </article>
+        `).join('');
+    };
+
+    // --- API CALLS for PRODUCTS ---
+    const fetchAllProducts = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/products`);
+            const products = await response.json();
+            renderProducts(products);
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+            productListContainer.innerHTML = `<p class="muted" style="text-align:center; color: red;">Could not load products.</p>`;
+        }
+    };
+
+    const searchProducts = async (searchTerm) => {
+        try {
+            const response = await fetch(`${API_URL}/api/products/search?q=${searchTerm}`);
+            const products = await response.json();
+            renderProducts(products);
+        } catch (error) {
+            console.error("Failed to search products:", error);
+        }
+    };
+
+    // --- EVENT LISTENER for SEARCH ---
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const searchTerm = searchInput.value.trim();
+        
+        // Use a timeout to prevent API calls on every single keystroke
+        searchTimeout = setTimeout(() => {
+            if (searchTerm) {
+                searchProducts(searchTerm);
+            } else {
+                fetchAllProducts(); // If search is cleared, show all products
+            }
+        }, 300); // 300ms delay
+    });
+
+    // --- INITIAL LOAD ---
+    fetchAllProducts();
+    
+    // --- [PREVIOUS SCRIPT CODE: Auth, Cart, Modals, etc.] ---
+    // (All of your existing JavaScript for login, cart, etc. goes here, unchanged)
+// CORRECT - The function is declared first
+const getElement = (id) => {
+  return document.getElementById(id);
+};
+
+// Now it can be called without an error
+document.addEventListener('DOMContentLoaded', () => {
+  const myElement = getElement('some-id'); // <-- This will now work
+});
+    // ... paste the rest of your previous, working JavaScript here ...
+});
+
+</script>
+    // This script is intentionally a placeholder. The response will replace it.
+</script>
 </body>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
-
-    // FIX 1: Swapped live key for a placeholder test key for safety during development.
-    const RAZORPAY_KEY_ID = 'rzp_live_YourTestKeyHere'; 
-    const API_BASE_URL = 'https://api.jovialflames.com/api';
+    const API_URL = 'http://localhost:3001';
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ay'; // Using TEST key
 
     const getElement = id => document.getElementById(id);
 
@@ -625,36 +715,44 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.classList.remove("show"), 3000);
     };
 
-    const apiCall = async (method, endpoint, body = null, button = null) => {
+    const apiCall = async (endpoint, body, button = null) => {
         const originalText = button ? button.textContent : null;
-        if (button) { button.disabled = true; button.textContent = 'Processing...'; }
-
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Processing...';
+        }
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('jovialFlamesToken');
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
         try {
-            const config = { method, headers };
-            if (body) config.body = JSON.stringify(body);
-
-            // FIX 2: Corrected API_URL to API_BASE_URL to match the constant defined above.
-            const response = await fetch(API_BASE_URL + endpoint, config);
+            const response = await fetch(API_URL + endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body),
+            });
             const data = await response.json();
-
             if (!response.ok) {
-                const errorMessage = data.errors ? data.errors[0].msg : data.message;
-                throw new Error(errorMessage || 'An unknown error occurred.');
+                throw new Error(data.message || 'An unknown error occurred.');
             }
             return data;
         } catch (error) {
             showToast(error.message, true);
             throw error;
         } finally {
-            if (button) { button.disabled = false; button.textContent = originalText; }
+            if (button) {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
         }
     };
 
-    // --- 2. UI SETUP ---
+    // --- 2. INITIALIZATION & UI SETUP ---
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.05}s`;
+    });
     getElement("darkToggle").addEventListener("click", () => {
         document.body.classList.toggle("dark");
         getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
@@ -673,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackingModal = getElement("tracking-modal");
     const modalViews = ['login-view', 'signup-view', 'verify-view', 'forgot-view', 'reset-view'];
 
+    // These are GLOBAL so the HTML onclick can find them
     window.openAuthModal = (formType) => { authModal.style.display = "grid"; updateAuthModalView(formType); };
     window.closeAuthModal = () => { authModal.style.display = "none"; };
     window.openPolicyModal = (type) => { getElement('policy-title').textContent = policyData[type].title; getElement('policy-content').innerHTML = policyData[type].content; policyModal.style.display = 'grid'; };
@@ -689,7 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames...</p>` }
     };
 
-    // --- 4. AUTHENTICATION LOGIC ---
+    // --- 4. AUTHENTICATION LOGIC (WIRED TO BACKEND) ---
     const authButtons = getElement("auth-buttons");
     const userButtons = getElement("user-buttons");
     const userGreeting = getElement("user-greeting");
@@ -707,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userGreeting.textContent = "";
         }
     };
+
     const checkAuthState = () => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
         if (user) updateUserUI(user);
@@ -717,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
         try {
-            await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email }, button);
+            await apiCall('/api/signup-request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
@@ -729,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
         try {
-            await apiCall('POST', '/auth/register', { ...pendingUserDetails, otp }, button);
+            await apiCall('/api/signup-verify', { ...pendingUserDetails, otp }, button);
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
@@ -742,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
         try {
-            const data = await apiCall('POST', '/auth/login', { email, password }, button);
+            const data = await apiCall('/api/login', { email, password }, button);
             localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
             localStorage.setItem('jovialFlamesToken', data.token);
             updateUserUI(data.user);
@@ -756,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         emailToReset = getElement('forgot-email').value.trim();
         try {
-            const data = await apiCall('POST', '/auth/forgot-password', { email: emailToReset }, button);
+            const data = await apiCall('/api/forgot-password', { email: emailToReset }, button);
             showToast(data.message);
             updateAuthModalView('reset');
         } catch (error) { emailToReset = null; }
@@ -767,20 +867,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const otp = getElement('reset-otp').value;
         const newPassword = getElement('reset-password').value;
+        if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
         try {
-            await apiCall('POST', '/auth/reset-password', { email: emailToReset, otp, newPassword }, button);
+            await apiCall('/api/reset-password', { email: emailToReset, otp, newPassword }, button);
             showToast("Password has been reset successfully. Please log in.");
             emailToReset = null;
             updateAuthModalView('login');
         } catch (error) { /* Handled by apiCall */ }
     });
 
+    // This is GLOBAL
     window.logoutUser = () => {
         localStorage.removeItem('jovialFlamesUser');
         localStorage.removeItem('jovialFlamesToken');
         showToast("Logged out successfully.");
         updateUserUI(null);
-        if (ordersSidebar.classList.contains("open")) {
+        if(ordersSidebar.classList.contains("open")) {
             ordersSidebar.classList.remove("open");
         }
     };
@@ -794,12 +896,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartCountBadge = getElement("cartCountBadge");
     const minOrderNotice = getElement("minOrderNotice");
 
-    const loadCart = () => {
-        const savedCart = localStorage.getItem('jovialFlamesCart');
-        if (savedCart) { cart = JSON.parse(savedCart); renderCart(); }
-    };
+    const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
     const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
-
+    
+    // These are GLOBAL
     window.addToCart = (button, name, price) => {
         const existingItem = cart.find(item => item.name === name);
         if (existingItem) { existingItem.quantity++; }
@@ -813,7 +913,6 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
-
     window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
     window.toggleCart = () => cartSidebar.classList.toggle("open");
     
@@ -848,57 +947,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const ordersSidebar = getElement("ordersSidebar");
     const orderList = getElement("orderList");
 
-    window.placeOrder = async (paymentMethod, event) => {
+    const placeFinalOrderOnServer = async (paymentMethod) => {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const grandTotal = subtotal + ((subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0);
+        const orderDetails = { id: 'JF' + Date.now().toString().slice(-6), date: new Date().toLocaleDateString('en-IN'), items: cart, grandTotal: grandTotal, paymentMethod: paymentMethod, status: 'Order Placed' };
+        try {
+            await apiCall('/api/order/place', { orderDetails });
+            showToast(`Order #${orderDetails.id} placed successfully!`);
+            cart = [];
+            saveCart();
+            renderCart();
+            toggleCart();
+        } catch (error) { console.error("Failed to place final order:", error); }
+    };
+    
+    // This is GLOBAL
+    window.placeOrder = async (paymentMethod) => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
         if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
-        
-        const customerName = getElement("custName").value.trim();
-        const customerPhone = getElement("custPhone").value.trim();
-        const deliveryAddress = getElement("custAddr").value.trim();
+        const name = getElement("custName").value.trim();
+        const phone = getElement("custPhone").value.trim();
+        const address = getElement("custAddr").value.trim();
         const pincode = getElement("custPin").value.trim();
-        if (!customerName || !customerPhone || !deliveryAddress || !pincode) return showToast("Please fill in all delivery details.", true);
-        
+        if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
         const button = event.target;
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shipping = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
-        const grandTotal = subtotal + shipping;
-
-        const orderDetails = {
-            id: 'JF' + Date.now().toString().slice(-6),
-            items: cart, grandTotal, customerName, customerPhone, deliveryAddress, pincode
-        };
-        
-        const placeFinalOrder = async (paymentInfo) => {
-            try {
-                const data = await apiCall('POST', '/orders/place', { orderDetails, paymentDetails: paymentInfo }, button);
-                showToast(`Order #${data.orderId} placed successfully!`);
-                cart = [];
-                saveCart();
-                renderCart();
-                toggleCart();
-            } catch(e) { /* Handled */ }
-        };
-
         if (paymentMethod === 'cod') {
-            await placeFinalOrder({ method: 'cod' });
+            await placeFinalOrderOnServer('cod');
             return;
         }
-
         if (paymentMethod === 'online') {
+            const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
             try {
-                const orderData = await apiCall('POST', '/orders/create-razorpay-order', { amount: grandTotal }, button);
+                const orderData = await apiCall('/api/payment/create-order', { amount: grandTotal }, button);
                 const options = {
                     key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
-                    handler: async (response) => { await placeFinalOrder({ method: 'online', verification: response }); },
-                    prefill: { name: user.name, email: user.email, contact: customerPhone }, theme: { color: "#d97706" }
+                    handler: async function (response) {
+                        try {
+                            await apiCall('/api/payment/verify', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature });
+                            await placeFinalOrderOnServer('online');
+                        } catch(error) { showToast("Payment verification failed. Please contact support.", true); }
+                    },
+                    prefill: { name: user.name, email: user.email, contact: phone }, theme: { color: "#d97706" }
                 };
                 const rzp = new Razorpay(options);
                 rzp.on('payment.failed', (response) => showToast('Payment failed: ' + response.error.description, true));
                 rzp.open();
-            } catch(error) { /* Handled */ }
+            } catch(error) { /* Handled by apiCall */ }
         }
     };
     
+    // This is GLOBAL
     window.toggleOrders = () => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
         if (!user) { openAuthModal('login'); return showToast("Please log in to view your orders.", true); }
@@ -906,40 +1004,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ordersSidebar.classList.contains("open")) renderOrders();
     };
 
-    const renderOrders = async () => {
-        try {
-            const orders = await apiCall('GET', '/orders/myorders');
-            if (!orders || orders.length === 0) {
-                orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
-                return;
-            }
-            orderList.innerHTML = orders.map(order => `
-                <div class="order-item">
-                    <div>
-                        <strong>Order: #${order.orderId}</strong>
-                        <div class="muted" style="font-size:0.8em;">Placed on: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
-                        <div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div>
-                        <div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div>
-                    </div>
-                </div>`
-            ).join('');
-        } catch (error) {
-            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>Could not load orders.</div>`;
+    const renderOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders || user.orders.length === 0) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+            return;
         }
+        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div><div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div><div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
     };
-    
-    // --- 7. ATTACH EVENT LISTENERS ---
-    getElement('loginBtn').addEventListener('click', () => openAuthModal('login'));
-    getElement('signupBtn').addEventListener('click', () => openAuthModal('signup'));
-    getElement('toggleOrdersBtn').addEventListener('click', toggleOrders);
-    getElement('logoutBtn').addEventListener('click', logoutUser);
-    getElement('toggleCartBtn').addEventListener('click', toggleCart);
 
+    // This is GLOBAL
+    window.trackOrderById = () => {
+        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
+        if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders) return showToast("Please log in to find orders.", true);
+        const order = user.orders.find(o => o.id === orderIdToTrack);
+        if (order) showTrackingDetails(orderIdToTrack);
+        else showToast(`Order #${orderIdToTrack} not found.`, true);
+    };
 
-    // --- 8. RUN ON PAGE LOAD ---
+    const showTrackingDetails = (orderId) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        const order = user.orders.find(o => o.id === orderId);
+        if (!order) return;
+        getElement('tracking-order-id').textContent = order.id;
+        const trackingDetailsContainer = getElement('tracking-details');
+        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+        const currentStatusIndex = statuses.indexOf(order.status);
+        let timelineHTML = '<ul class="tracking-timeline">';
+        statuses.forEach((status, index) => {
+            const isCompleted = index <= currentStatusIndex;
+            let className = isCompleted ? 'completed' : '';
+            if (isCompleted && index === currentStatusIndex) className += ' active';
+            timelineHTML += `<li class="${className}"><div class="status">${status}</div></li>`;
+        });
+        timelineHTML += '</ul>';
+        trackingDetailsContainer.innerHTML = timelineHTML;
+        openTrackingModal();
+    };
+
+    // --- 7. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
     checkAuthState();
+    
 });
 </script>
 </html>
