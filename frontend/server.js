@@ -147,6 +147,14 @@ app.post('/auth/reset-password', [
     await Otp.deleteOne({ email });
     res.status(200).json({ message: 'Password has been reset successfully.' });
 });
+// In your main server.js, you might have something like this:
+const authRoutes = require('./routes/auth'); // Make sure you import the router
+app.use('/api/auth', authRoutes); // Make sure the base path is correct
+
+// Then, inside your ./routes/auth.js file, you MUST have this:
+router.post('/login', (req, res) => {
+  // Your logic to handle the user login goes here
+});
 
 // Root route for testing
 app.get('/api', (req, res) => {
