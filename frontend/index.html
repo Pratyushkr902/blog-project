@@ -612,45 +612,38 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
-    // All helpers are defined first to prevent initialization errors.
-    const API_URL = 'https://api.jovialflames.com/api'; // Use your deployed backend URL
-    const RAZORPAY_KEY_ID = 'rzp_test_YourTestKeyHere';  // Using a TEST key is safer for development
+    const API_URL = 'https://api.jovialflames.com';
+    const RAZORPAY_KEY_ID = 'rzp_live_RRgKsdeTvA0ayv'; // Using your TEST key
 
     const getElement = id => document.getElementById(id);
 
     const showToast = (message, isError = false) => {
         const toast = getElement("toast");
-        if (!toast) return;
         toast.textContent = message;
         toast.className = isError ? "error show" : "success show";
         setTimeout(() => toast.classList.remove("show"), 3000);
     };
 
-    const apiCall = async (method, endpoint, body = null, button = null) => {
+    const apiCall = async (endpoint, body, button = null) => {
         const originalText = button ? button.textContent : null;
         if (button) {
             button.disabled = true;
             button.textContent = 'Processing...';
         }
-
         const headers = { 'Content-Type': 'application/json' };
         const token = localStorage.getItem('jovialFlamesToken');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-
         try {
-            const config = { method, headers };
-            if (body) {
-                config.body = JSON.stringify(body);
-            }
-
-            const response = await fetch(API_URL + endpoint, config);
+            const response = await fetch(API_URL + endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body),
+            });
             const data = await response.json();
-
             if (!response.ok) {
-                const errorMessage = data.errors ? data.errors[0].msg : data.message;
-                throw new Error(errorMessage || 'An unknown error occurred.');
+                throw new Error(data.message || 'An unknown error occurred.');
             }
             return data;
         } catch (error) {
@@ -664,80 +657,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 2. DYNAMIC PRODUCT LOADING & SEARCH ---
-    const productListContainer = getElement('product-list');
-    const searchInput = getElement('searchInput');
-
-    const renderProducts = (products) => {
-        if (!productListContainer) return;
-        if (!products || products.length === 0) {
-            productListContainer.innerHTML = `<p class="muted" style="text-align:center;">No products found.</p>`;
-            return;
-        }
-        
-        productListContainer.innerHTML = products.map(product => `
-            <article class="card">
-                <div class="img"><img src="${product.imageUrl || './placeholder.jpg'}" alt="${product.name}" loading="lazy"></div>
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <div>
-                        <div style="font-weight:800">${product.name}</div>
-                        <div class="muted">${product.description || ''}</div>
-                    </div>
-                    <div class="price">Rs. ${product.price}</div>
-                </div>
-                <button class="btn" onclick="addToCart(this, '${product.name}', ${product.price})">Add to Cart</button>
-            </article>
-        `).join('');
-    };
-
-    const fetchAllProducts = async () => {
-        try {
-            const response = await fetch(`${API_URL}/products`); // Assuming a GET endpoint for products
-            if (!response.ok) throw new Error('Network response was not ok');
-            const products = await response.json();
-            renderProducts(products);
-        } catch (error) {
-            console.error("Failed to fetch products:", error);
-            if (productListContainer) {
-                productListContainer.innerHTML = `<p class="muted" style="text-align:center; color: red;">Could not load products.</p>`;
-            }
-        }
-    };
-
-    const searchProducts = async (searchTerm) => {
-        try {
-            const response = await fetch(`${API_URL}/products/search?q=${encodeURIComponent(searchTerm)}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const products = await response.json();
-            renderProducts(products);
-        } catch (error) {
-            console.error("Failed to search products:", error);
-        }
-    };
-
-    let searchTimeout;
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            const searchTerm = searchInput.value.trim();
-            
-            searchTimeout = setTimeout(() => {
-                if (searchTerm) {
-                    searchProducts(searchTerm);
-                } else {
-                    fetchAllProducts();
-                }
-            }, 300);
-        });
-    }
-
-    // --- 3. UI SETUP ---
+    // --- 2. UI SETUP ---
     getElement("darkToggle").addEventListener("click", () => {
         document.body.classList.toggle("dark");
         getElement("darkToggle").textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
         localStorage.setItem('dark-mode', document.body.classList.contains('dark'));
     });
-
     const loadDarkMode = () => {
         if (localStorage.getItem('dark-mode') === 'true') {
             document.body.classList.add('dark');
@@ -745,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 4. MODAL MANAGEMENT ---
+    // --- 3. MODAL MANAGEMENT ---
     const authModal = getElement("auth-modal");
     const policyModal = getElement("policy-modal");
     const trackingModal = getElement("tracking-modal");
@@ -767,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return: { title: "Return & Refund Policy", content: `<p>Thank you for shopping at Jovial Flames...</p>` }
     };
 
-    // --- 5. AUTHENTICATION LOGIC ---
+    // --- 4. AUTHENTICATION LOGIC ---
     const authButtons = getElement("auth-buttons");
     const userButtons = getElement("user-buttons");
     const userGreeting = getElement("user-greeting");
@@ -785,7 +710,6 @@ document.addEventListener('DOMContentLoaded', () => {
             userGreeting.textContent = "";
         }
     };
-
     const checkAuthState = () => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
         if (user) updateUserUI(user);
@@ -796,85 +720,71 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
         try {
-            await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email }, button);
+            await apiCall('/api/signup-request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
         } catch (error) { /* Handled by apiCall */ }
     });
-
-    getElement('resend-otp-link').addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (!pendingUserDetails || !pendingUserDetails.email) {
-            showToast("Could not resend OTP. Please try signing up again.", true);
-            updateAuthModalView('signup');
-            return;
-        }
-        try {
-            await apiCall('POST', '/auth/request-otp', { email: pendingUserDetails.email });
-            showToast(`A new OTP has been sent to ${pendingUserDetails.email}`);
-        } catch (error) { /* Handled */ }
-    });
-
     getElement('verify-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
         try {
-            await apiCall('POST', '/auth/register', { ...pendingUserDetails, otp }, button);
+            await apiCall('/api/signup-verify', { ...pendingUserDetails, otp }, button);
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
-        } catch (error) { /* Handled */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
     getElement('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
         try {
-            const data = await apiCall('POST', '/auth/login', { email, password }, button);
+            const data = await apiCall('/api/login', { email, password }, button);
             localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
             localStorage.setItem('jovialFlamesToken', data.token);
             updateUserUI(data.user);
             showToast("Logged in successfully!");
             closeAuthModal();
-        } catch (error) { /* Handled */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
     getElement('forgot-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         emailToReset = getElement('forgot-email').value.trim();
         try {
-            const data = await apiCall('POST', '/auth/forgot-password', { email: emailToReset }, button);
+            const data = await apiCall('/api/forgot-password', { email: emailToReset }, button);
             showToast(data.message);
             updateAuthModalView('reset');
         } catch (error) { emailToReset = null; }
     });
-
     getElement('reset-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button');
         const otp = getElement('reset-otp').value;
         const newPassword = getElement('reset-password').value;
+        if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
         try {
-            await apiCall('POST', '/auth/reset-password', { email: emailToReset, otp, newPassword }, button);
-            showToast("Password has been reset. Please log in.");
+            await apiCall('/api/reset-password', { email: emailToReset, otp, newPassword }, button);
+            showToast("Password has been reset successfully. Please log in.");
             emailToReset = null;
             updateAuthModalView('login');
-        } catch (error) { /* Handled */ }
+        } catch (error) { /* Handled by apiCall */ }
     });
-
     window.logoutUser = () => {
         localStorage.removeItem('jovialFlamesUser');
         localStorage.removeItem('jovialFlamesToken');
         showToast("Logged out successfully.");
         updateUserUI(null);
+        if(ordersSidebar.classList.contains("open")) {
+            ordersSidebar.classList.remove("open");
+        }
     };
 
-    // --- 6. CART LOGIC ---
+    // --- 5. CART LOGIC ---
     let cart = [];
     const MIN_ORDER_VALUE = 199;
     const cartSidebar = getElement("cartSidebar");
@@ -882,7 +792,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartSummaryContainer = getElement("cartSummary");
     const cartCountBadge = getElement("cartCountBadge");
     const minOrderNotice = getElement("minOrderNotice");
-
     const loadCart = () => { const savedCart = localStorage.getItem('jovialFlamesCart'); if (savedCart) { cart = JSON.parse(savedCart); renderCart(); } };
     const saveCart = () => localStorage.setItem('jovialFlamesCart', JSON.stringify(cart));
     
@@ -899,8 +808,9 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true;
         setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
     };
-    
     window.removeItem = (index) => { cart.splice(index, 1); renderCart(); saveCart(); };
+    
+    // THIS IS THE MISSING FUNCTION
     window.toggleCart = () => cartSidebar.classList.toggle("open");
     
     const renderCart = () => {
@@ -913,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
             getElement('checkout-section').style.display = 'none';
             return;
         }
-        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
+        cartItemsContainer.innerHTML = cart.map((item, index) => `<div class="cart-item"><div><div>${item.name} (x${item.quantity})</div><div class="muted" style="font-size:0.9em;">Rs. ${item.price * item.quantity}</div></div><button class="remove-btn" onclick="removeItem(${index})">×</button></div>`).join('');
         let shippingCharges = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
         let shippingText = (shippingCharges > 0) ? `Rs. ${shippingCharges}` : `Free`;
         const grandTotal = subtotal + shippingCharges;
@@ -930,69 +840,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 7. ORDER & PAYMENT LOGIC ---
+    // --- 6. ORDER & PAYMENT LOGIC ---
     const ordersSidebar = getElement("ordersSidebar");
     const orderList = getElement("orderList");
+// --- Replace your old function with this corrected one ---
 
-    window.placeOrder = async (paymentMethod, event) => {
-        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
-        if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
-        
-        const deliveryDetails = {
-            name: getElement("custName").value.trim(),
-            phone: getElement("custPhone").value.trim(),
-            address: getElement("custAddr").value.trim(),
-            pincode: getElement("custPin").value.trim()
-        };
+const placeFinalOrderOnServer = async (paymentMethod, button) => {
+    const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
+    
+    // 1. GET THE ADDRESS DETAILS FROM THE FORM
+    const customerName = getElement("custName").value.trim();
+    const customerPhone = getElement("custPhone").value.trim();
+    const deliveryAddress = getElement("custAddr").value.trim();
+    const pincode = getElement("custPin").value.trim();
 
-        if (!deliveryDetails.name || !deliveryDetails.phone || !deliveryDetails.address || !deliveryDetails.pincode) {
-            return showToast("Please fill in all delivery details.", true);
-        }
-        
-        const button = event.target;
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shippingPrice = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
-        const grandTotal = subtotal + shippingPrice;
+    // 2. CREATE THE COMPLETE ORDER OBJECT
+    const orderDetails = {
+        id: 'JF' + Date.now().toString().slice(-6),
+        date: new Date().toLocaleDateString('en-IN'),
+        items: cart,
+        grandTotal: grandTotal,
+        paymentMethod: paymentMethod,
+        status: 'Order Placed',
+        // 3. INCLUDE THE NEW ADDRESS FIELDS
+        customerName: customerName,
+        customerPhone: customerPhone,
+        deliveryAddress: deliveryAddress,
+        pincode: pincode
+    };
 
-        const placeFinalOrderOnServer = async (paymentInfo) => {
-            try {
-                const orderPayload = {
-                    orderItems: cart,
-                    deliveryDetails,
-                    paymentMethod: paymentInfo.method,
-                    paymentDetails: paymentInfo,
-                    shippingPrice,
-                    grandTotal
-                };
-                const data = await apiCall('POST', '/orders/place', orderPayload, button);
-                showToast(`Order #${data.orderId} placed successfully!`);
-                cart = [];
-                saveCart();
-                renderCart();
-                toggleCart();
-            } catch(e) { /* Handled by apiCall */ }
-        };
+    try {
+        await apiCall('/api/order/place', { orderDetails }, button);
+        showToast(`Order #${orderDetails.id} placed successfully!`);
+        cart = [];
+        saveCart();
+        renderCart();
+        toggleCart();
+    } catch (error) {
+        console.error("Failed to place final order:", error);
+    }
+};
 
-        if (paymentMethod === 'cod') {
-            await placeFinalOrderOnServer({ method: 'cod' });
-            return;
-        }
+// Also, update the placeOrder function to pass the button correctly
+window.placeOrder = async (paymentMethod) => {
+    const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+    if (!user) { toggleCart(); openAuthModal('login'); return showToast("Please log in to place an order.", true); }
+    const name = getElement("custName").value.trim();
+    const phone = getElement("custPhone").value.trim();
+    const address = getElement("custAddr").value.trim();
+    const pincode = getElement("custPin").value.trim();
+    if (!name || !phone || !address || !pincode) return showToast("Please fill in all delivery details.", true);
+    
+    const button = event.target; // Get the button that was clicked
 
+    if (paymentMethod === 'cod') {
+        await placeFinalOrderOnServer('cod', button); // Pass the button here
+        return;
+    }
         if (paymentMethod === 'online') {
+            const grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + ((cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 299) ? 99 : (cart.reduce((s, i) => s + (i.price * i.quantity), 0) < 499) ? 49 : 0);
             try {
-                const orderData = await apiCall('POST', '/orders/create-razorpay-order', { amount: grandTotal }, button);
+                const orderData = await apiCall('/api/payment/create-order', { amount: grandTotal }, button);
                 const options = {
-                    key: RAZORPAY_KEY_ID,
-                    amount: orderData.amount,
-                    currency: "INR",
-                    name: "Jovial Flames",
-                    description: "Candle Purchase",
-                    order_id: orderData.id,
-                    handler: async (response) => {
-                        await placeFinalOrderOnServer({ method: 'online', verification: response });
+                    key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
+                    handler: async function (response) {
+                        try {
+                            await apiCall('/api/payment/verify', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature });
+                            await placeFinalOrderOnServer('online');
+                        } catch(error) { showToast("Payment verification failed. Please contact support.", true); }
                     },
-                    prefill: { name: user.name, email: user.email, contact: deliveryDetails.phone },
-                    theme: { color: "#d97706" }
+                    prefill: { name: user.name, email: user.email, contact: phone }, theme: { color: "#d97706" }
                 };
                 const rzp = new Razorpay(options);
                 rzp.on('payment.failed', (response) => showToast('Payment failed: ' + response.error.description, true));
@@ -1007,40 +924,71 @@ document.addEventListener('DOMContentLoaded', () => {
         ordersSidebar.classList.toggle("open");
         if (ordersSidebar.classList.contains("open")) renderOrders();
     };
-
-    const renderOrders = async () => {
-        try {
-            const orders = await apiCall('GET', '/orders/myorders');
-            if (!orders || orders.length === 0) {
-                orderList.innerHTML = `<div class='muted'>You have no past orders.</div>`;
-                return;
-            }
-            orderList.innerHTML = orders.map(order => `
-                <div class="order-item">
-                    <div><strong>Order: #${order.orderId}</strong></div>
-                    <div class="muted">Placed on: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
-                    <div class="muted">Status: <strong>${order.status}</strong></div>
-                    <div class="muted">Total: Rs. ${order.grandTotal}</div>
-                </div>`
-            ).join('');
-        } catch (error) {
-            orderList.innerHTML = `<div class='muted'>Could not load orders.</div>`;
+    const renderOrders = () => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders || user.orders.length === 0) {
+            orderList.innerHTML = `<div class='muted' style='text-align:center; padding: 1rem;'>You have no past orders.</div>`;
+            return;
         }
+        orderList.innerHTML = [...user.orders].reverse().map(order => `<div class="order-item"><div><strong>Order: #${order.id}</strong><div class="muted" style="font-size:0.8em;">Placed on: ${order.date}</div><div class="muted" style="font-size:0.9em;">Status: <strong>${order.status}</strong></div><div class="muted" style="font-size:0.9em;font-weight:bold;margin-top:0.5rem;">Total: Rs. ${order.grandTotal}</div></div></div>`).join('');
     };
 
-    // --- 8. ATTACH EVENT LISTENERS ---
-    getElement('loginBtn').addEventListener('click', () => openAuthModal('login'));
-    getElement('signupBtn').addEventListener('click', () => openAuthModal('signup'));
-    getElement('toggleOrdersBtn').addEventListener('click', toggleOrders);
-    getElement('logoutBtn').addEventListener('click', logoutUser);
-    getElement('toggleCartBtn').addEventListener('click', toggleCart);
+    window.trackOrderById = () => {
+        const orderIdToTrack = getElement('trackOrderIdInput').value.trim();
+        if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        if (!user || !user.orders) return showToast("Please log in to find orders.", true);
+        const order = user.orders.find(o => o.id === orderIdToTrack);
+        if (order) showTrackingDetails(orderIdToTrack);
+        else showToast(`Order #${orderIdToTrack} not found.`, true);
+    };
+    const showTrackingDetails = (orderId) => {
+        const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
+        const order = user.orders.find(o => o.id === orderId);
+        if (!order) return;
+        getElement('tracking-order-id').textContent = order.id;
+        const trackingDetailsContainer = getElement('tracking-details');
+        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
+        const currentStatusIndex = statuses.indexOf(order.status);
+        let timelineHTML = '<ul class="tracking-timeline">';
+        statuses.forEach((status, index) => {
+            const isCompleted = index <= currentStatusIndex;
+            let className = isCompleted ? 'completed' : '';
+            if (isCompleted && index === currentStatusIndex) className += ' active';
+            timelineHTML += `<li class="${className}"><div class="status">${status}</div></li>`;
+        });
+        timelineHTML += '</ul>';
+        trackingDetailsContainer.innerHTML = timelineHTML;
+        openTrackingModal();
+    };
+// --- Add this code to your script ---
 
-    // --- 9. RUN ON PAGE LOAD ---
+// Function for the "Get In Touch" contact form
+window.handleSubmit = (e) => {
+    e.preventDefault();
+    const name = getElement('name').value;
+    showToast(`Thanks, ${name}! We'll be in touch.`);
+    e.target.reset();
+};
+
+// Function for the newsletter subscription form
+window.subscribe = () => {
+    const email = getElement('newsletterEmail').value;
+    if (!email || !email.includes('@')) {
+        return showToast("Please enter a valid email.", true);
+    }
+    showToast(`Discount code sent to ${email}!`);
+    getElement('newsletterEmail').value = "";
+};
+
+// --- 7. RUN ON PAGE LOAD ---
+// ... (rest of the code)
+    // --- 7. RUN ON PAGE LOAD ---
     loadDarkMode();
     loadCart();
     checkAuthState();
-    fetchAllProducts();
     
 });
 </script>
+</html>
 </html>
