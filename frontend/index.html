@@ -496,13 +496,15 @@
           </div>
     
           <div id="verify-view" style="display: none;">
-            <h2>Verify Your Email</h2>
-            <p class="muted" style="text-align: center; font-size: 0.9em;">An OTP has been sent to <strong id="otp-email-display"></strong>. Please enter it below.</p>
-            <form id="verify-form">
-                <div class="form-group"><label for="verify-otp">OTP Code</label><input type="text" id="verify-otp" class="news-input" required placeholder="e.g. 123456" /></div>
-                <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Verify & Sign Up</button>
-            </form>
-          </div>
+  <h2>Verify Your Email</h2>
+  <p>An OTP has been sent to <strong id="otp-email-display"></strong></p>
+  <input type="text" id="verify-otp" placeholder="Enter OTP" required>
+  <button type="submit">Verify & Create Account</button>
+
+  <p class="resend-notice">
+    Didn't receive the code? <a href="#" id="resend-otp-link">Resend OTP</a>
+  </p>
+
     
           <div id="forgot-view" style="display: none;">
             <h2>Forgot Password</h2>
