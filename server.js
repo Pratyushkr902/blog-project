@@ -1,68 +1,167 @@
+// --- IMPORTS ---
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
+require('dotenv').config();
 
+// --- INITIALIZATIONS ---
 const app = express();
-app.use(cors()); 
-app.use(express.json()); 
+const SALT_ROUNDS = 10;
 
-let users = [];
-let otps = {}; 
+// --- MIDDLEWARE ---
+app.use(cors({
+    origin: process.env.FRONTEND_URL, // Make sure FRONTEND_URL is in your .env
+    credentials: true
+}));
+app.use(express.json());
 
-
-const PORT = 3001;
-// Root route
-app.get('/', (req, res) => {
-  res.send('Welcome to Jovial Flames API! 🎉 Server is running.');
+// --- DATABASE CONNECTION ---
+mongoose.connect(process.env.MONGO_URI, {
+}).then(() => {
+  console.log('✅ Connected to MongoDB');
+}).catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-// server.js -> The CORRECT way
+// --- MONGOOSE MODELS ---
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
+}, { timestamps: true });
 
-// Use an "App Password" from Google, not your real password.
-// We will set these values in the Render dashboard later.
-let transporter = nodemailer.createTransport({
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
+    next();
+});
+
+userSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+const otpSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  code: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now, expires: '10m' }
+});
+const Otp = mongoose.model('Otp', otpSchema);
+
+// --- NODEMAILER TRANSPORTER ---
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER, // Use environment variable
-    pass: process.env.GMAIL_PASS  // Use environment variable
-  }
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
 });
-// Inside server.js
-app.post('/api/signup-request-otp', (req, res) => {
+transporter.verify().then(() => console.log('✅ Email transporter ready')).catch(err => console.error('⚠️ Email transporter error:', err.message));
+
+
+// --- HELPER FUNCTIONS ---
+const sendOtpEmail = async (email, subject, text) => {
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  await Otp.findOneAndUpdate({ email }, { code: otpCode }, { upsert: true, new: true });
+  const mailOptions = { from: `"Jovial Flames" <${process.env.GMAIL_USER}>`, to: email, subject, text: `${text} ${otpCode}\nThis code will expire in 10 minutes.` };
+  await transporter.sendMail(mailOptions);
+  console.log(`OTP sent to ${email}: ${otpCode}`);
+};
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+};
+
+
+// --- API ROUTES ---
+// VVV ADD THIS NEW TEST ROUTE VVV
+app.get('/api/auth/test', (req, res) => {
+  res.status(200).send('The test route is working correctly!');
+});
+
+// ✅ CORRECTED: Added /auth prefix to all routes
+app.post('/api/auth/request-otp', [body('email').isEmail()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   const { email } = req.body;
-  if (users.find(u => u.email === email)) {
-    return res.status(400).json({ message: "Email already registered." });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
-  otps[email] = otp;
-
-  transporter.sendMail({
-    from: '"Jovial Flames" <00pratyush20@gmail.com>',
-    to: email,
-    subject: 'Your Verification Code',
-    text: `Your OTP for Jovial Flames is: ${otp}`
-  }, (error, info) => {
-    if (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Failed to send OTP." });
-    }
-    console.log('OTP Sent: ' + info.response);
-    res.status(200).json({ message: "OTP sent successfully." });
-  });
+  const existingUser = await User.findOne({ email });
+  if (existingUser) return res.status(400).json({ message: 'User with this email already exists.' });
+  await sendOtpEmail(email, 'Your Jovial Flames Verification Code', 'Welcome! Your OTP is:');
+  res.status(200).json({ message: 'OTP sent successfully.' });
 });
-// Inside server.js
-app.post('/api/signup-verify', (req, res) => {
-    const { name, email, password, otp } = req.body;
-    if (otps[email] === otp) {
-        users.push({ name, email, password, orders: [] });
-        delete otps[email]; // OTP used, so remove it
-        // In a real app, you would save the user to a database here
-        res.status(201).json({ message: "User created successfully." });
-    } else {
-        res.status(400).json({ message: "Invalid OTP." });
+
+app.post('/api/auth/register', [
+  body('name').notEmpty(),
+  body('email').isEmail(),
+  body('password').isLength({ min: 6 }),
+  body('otp').isLength({ min: 6, max: 6 })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  const { name, email, password, otp } = req.body;
+  const storedOtp = await Otp.findOne({ email, code: otp });
+  if (!storedOtp) return res.status(400).json({ message: 'Invalid or expired OTP.' });
+  const user = await User.create({ name, email, password });
+  await Otp.deleteOne({ email });
+  res.status(201).json({ _id: user._id, name: user.name, email: user.email, token: generateToken(user._id) });
+});
+
+app.post('/api/auth/login', [body('email').isEmail(), body('password').notEmpty()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (user && (await user.matchPassword(password))) {
+    const { password, ...userData } = user.toObject();
+    res.json({ user: userData, token: generateToken(user._id) });
+  } else {
+    res.status(401).json({ message: 'Invalid email or password' });
+  }
+});
+
+app.post('/api/auth/forgot-password', [body('email').isEmail()], async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (user) {
+        await sendOtpEmail(email, 'Your Password Reset Code', 'Your password reset OTP is:');
     }
+    res.status(200).json({ message: 'If an account exists, an OTP has been sent.' });
+});
+
+app.post('/api/auth/reset-password', [
+    body('email').isEmail(),
+    body('otp').isLength({ min: 6, max: 6 }),
+    body('newPassword').isLength({ min: 6 })
+], async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    const storedOtp = await Otp.findOne({ email, code: otp });
+    if (!storedOtp) return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    const user = await User.findOne({ email });
+    user.password = newPassword;
+    await user.save();
+    await Otp.deleteOne({ email });
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+});
+
+// Root route for testing
+app.get('/api', (req, res) => {
+    res.send('Jovial Flames API is running...');
+});
+
+
+// --- SERVER INITIALIZATION ---
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`🔥 Server is running on http://localhost:${PORT}`);
+});
+// This tells your app what to do when it gets a GET request to the root URL
+app.get('/', (req, res) => {
+  res.send('Welcome to the Jovial Flames API! Server is running correctly. 🎉');
 });
