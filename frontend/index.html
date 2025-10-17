@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURATION & HELPERS ---
     const API_URL = 'https://api.jovialflames.com';
-    const RAZORPAY_KEY_ID = 'rzp_test_YourTestKeyHere'; // Using a TEST key is safer
+    const RAZORPAY_KEY_ID = 'rzp_live_YourTestKeyHere'; // Using a TEST key is safer
 
     const getElement = id => document.getElementById(id);
 
@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pendingUserDetails = { name: getElement('signup-name').value.trim(), email: getElement('signup-email').value.trim(), password: getElement('signup-password').value };
         try {
             // Assuming this endpoint exists for demonstration
-            await apiCall('/signup-request-otp', { email: pendingUserDetails.email }, button);
+            await apiCall('/api/signup-request-otp', { email: pendingUserDetails.email }, button);
             showToast(`OTP sent to ${pendingUserDetails.email}`);
             getElement('otp-email-display').textContent = pendingUserDetails.email;
             updateAuthModalView('verify');
@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         const otp = getElement('verify-otp').value;
         try {
-            await apiCall('/signup-verify', { ...pendingUserDetails, otp }, button);
+            await apiCall('/api/signup-verify', { ...pendingUserDetails, otp }, button);
             showToast("Account created! Please log in.");
             updateAuthModalView('login');
             pendingUserDetails = null;
@@ -738,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = getElement('login-email').value.trim();
         const password = getElement('login-password').value;
         try {
-            const data = await apiCall('/login', { email, password }, button);
+            const data = await apiCall('/api/login', { email, password }, button);
             localStorage.setItem('jovialFlamesUser', JSON.stringify(data.user));
             localStorage.setItem('jovialFlamesToken', data.token);
             showToast(`Welcome back, ${data.user.name.split(' ')[0]}!`);
@@ -751,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.querySelector('button');
         emailToReset = getElement('forgot-email').value.trim();
         try {
-            const data = await apiCall('/forgot-password', { email: emailToReset }, button);
+            const data = await apiCall('/api/forgot-password', { email: emailToReset }, button);
             showToast(data.message);
             updateAuthModalView('reset');
         } catch (error) { emailToReset = null; }
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newPassword = getElement('reset-password').value;
         if (newPassword.length < 6) return showToast("Password must be at least 6 characters.", true);
         try {
-            await apiCall('/reset-password', { email: emailToReset, otp, newPassword }, button);
+            await apiCall('/api/reset-password', { email: emailToReset, otp, newPassword }, button);
             showToast("Password has been reset successfully. Please log in.");
             emailToReset = null;
             updateAuthModalView('login');
