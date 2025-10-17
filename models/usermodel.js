@@ -1,25 +1,20 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const { OrderSchema } = require('./Order'); // Import the OrderSchema
 
-const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  orders: [OrderSchema] // Use the imported OrderSchema here
 });
 
-// Hash password before saving the user
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+const OtpSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    code: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now, expires: '10m' } // OTP auto-deletes after 10 mins
 });
 
-// Method to compare entered password with hashed password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-};
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = { User, Otp };

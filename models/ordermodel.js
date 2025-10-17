@@ -1,24 +1,19 @@
 const mongoose = require('mongoose');
 
-const orderSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
-    orderItems: [{
-        name: { type: String, required: true },
-        quantity: { type: Number, required: true },
-        price: { type: Number, required: true },
-    }],
-    deliveryDetails: {
-        name: { type: String, required: true },
-        phone: { type: String, required: true },
-        address: { type: String, required: true },
-        pincode: { type: String, required: true },
-    },
-    paymentMethod: { type: String, required: true },
-    shippingPrice: { type: Number, required: true, default: 0.0 },
-    grandTotal: { type: Number, required: true, default: 0.0 },
-}, {
-    timestamps: true, // Adds createdAt and updatedAt fields
+const OrderSchema = new mongoose.Schema({
+  id: String,
+  date: String,
+  items: Array,
+  grandTotal: Number,
+  paymentMethod: String,
+  status: { type: String, default: 'Order Placed' },
+  lastUpdate: { type: Date, default: Date.now },
+  customerName: String,
+  customerPhone: String,
+  deliveryAddress: String,
+  pincode: String
 });
 
-const Order = mongoose.model('Order', orderSchema);
-module.exports = Order;
+// We only export the schema here because it's embedded in the User model.
+// If you wanted a separate 'orders' collection, you would create and export a model here.
+module.exports = { OrderSchema };
