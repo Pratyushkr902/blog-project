@@ -88,6 +88,27 @@ const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 
 
 // ================== SETUP SERVICES ==================
+// You can delete this old code
+
+
+let transporter = nodemailer.createTransport({
+  host: process.env.MAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: true, // or false
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// ...and your old sendMail function
+transporter.sendMail({
+  from: '"Jovial Flames" <you@gmail.com>',
+  to: email,
+  subject: 'Your OTP',
+  text: `Your OTP is: ${otp}`
+});
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
