@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
+const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcrypt');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
