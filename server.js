@@ -89,29 +89,33 @@ const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 
 // ================== SETUP SERVICES ==================
 // ================== SETUP SERVICES ==================
-
-// ✅ FIX: Use SendGrid for email, not Nodemailer
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-// This is the function we will use to send emails
+// This is our function to send emails using SendGrid
 const sendEmail = async (to, subject, text) => {
   const msg = {
     to: to,
-    from: 'youremail@gmail.com', // ❗️ MUST be your SendGrid Verified Sender
+    from: 'noreply@jovialflames.com', // ❗️ Ensure this is your SendGrid Verified Sender
     subject: subject,
     text: text,
+    // Optional: Add HTML content if you want
+    // html: `<strong>${text}</strong>`,
   };
+
+  console.log(`Attempting to send email to ${to} via SendGrid...`); // Log before sending
 
   try {
     await sgMail.send(msg);
-    console.log(`Email sent to ${to}`);
+    console.log(`✅ Email sent successfully to ${to}`); // Log success
+
   } catch (error) {
-    console.error('Error sending email:', error);
+    // 👇 LOG THE DETAILED SENDGRID ERROR
+    console.error(`🔴 Failed to send email to ${to}:`, error);
+
+    // SendGrid often includes more details in error.response.body
     if (error.response) {
-      console.error(error.response.body);
+      console.error('SendGrid Error Body:', error.response.body);
     }
-    // Re-throw the error so the calling function knows it failed
+
+    // Re-throw the error so the calling route knows it failed
     throw new Error('Failed to send email.');
   }
 };
