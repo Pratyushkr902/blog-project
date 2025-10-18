@@ -840,36 +840,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderList = getElement("orderList");
 
     const placeFinalOrderOnServer = async (paymentMethod) => {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shipping = (subtotal < 299) ? 99 : (subtotal < 499) ? 49 : 0;
-        const grandTotal = subtotal + shipping;
-        
-        const orderDetails = {
-            id: 'JF' + Date.now().toString().slice(-6),
-            date: new Date().toLocaleDateString('en-IN'),
-            items: cart,
-            grandTotal: grandTotal,
-            paymentMethod: paymentMethod,
-            status: 'Order Placed',
-            customerName: getElement("custName").value.trim(),
-            customerPhone: getElement("custPhone").value.trim(),
-            deliveryAddress: getElement("custAddr").value.trim(),
-            pincode: getElement("custPin").value.trim()
-        };
+    // ✅ FIX: The backend securely calculates totals, so we don't need to here.
 
-        try {
-            // This is a placeholder for a real API call.
-            console.log('Placing order on server:', orderDetails);
-            // await apiCall('/order/place', { orderDetails });
-            showToast(`Order #${orderDetails.id} placed successfully!`);
-            cart = [];
-            saveCart();
-            renderCart();
-            toggleCart();
-        } catch (error) {
-            console.error("Failed to place final order:", error);
-        }
+    // ✅ FIX: Create the customerDetails object the backend expects
+    const customerDetails = {
+        customerName: getElement("custName").value.trim(),
+        customerPhone: getElement("custPhone").value.trim(),
+        deliveryAddress: getElement("custAddr").value.trim(),
+        pincode: getElement("custPin").value.trim()
     };
+
+    // ✅ FIX: Create the exact payload object the backend /api/orders/place route expects
+    const payload = {
+        items: cart, // Just send the cart array
+        customerDetails: customerDetails,
+        paymentMethod: paymentMethod
+    };
+    
+    try {
+        // ✅ FIX: Call the correct endpoint with the correct payload
+        const data = await apiCall('/api/orders/place', payload); 
+        
+        // ✅ FIX: Use the message from the server response
+        showToast(data.message); // This will say "Order #JF123456 placed."
+        cart = [];
+        saveCart();
+        renderCart();
+        toggleCart();
+    } catch (error) {
+        console.error("Failed to place final order:", error);
+    }
+};
 
     window.placeOrder = async (paymentMethod, event) => {
         const user = JSON.parse(localStorage.getItem('jovialFlamesUser'));
@@ -895,17 +896,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const grandTotal = subtotal + shipping;
             
             try {
-                // Mocking API call for Razorpay order creation
-                const orderData = { id: 'order_' + Date.now(), amount: grandTotal * 100 };
+                // ✅ FIX: Use the correct backend route
+                const orderData = await apiCall('/api/orders/create-payment-order', { amount: grandTotal }, button); 
                 // const orderData = await apiCall('/payment/create-order', { amount: grandTotal }, button);
                 const options = {
                     key: RAZORPAY_KEY_ID, amount: orderData.amount, currency: "INR", name: "Jovial Flames", description: "Candle Purchase", order_id: orderData.id,
                     handler: async function (response) {
                         try {
-                            // Mocking payment verification
-                            console.log('Verifying payment:', response);
-                            // await apiCall('/payment/verify', { razorpay_payment_id: response.razorpay_payment_id, razorpay_order_id: response.razorpay_order_id, razorpay_signature: response.razorpay_signature });
-                            await placeFinalOrderOnServer('online');
+                            // ✅ FIX: Use the correct backend route to verify payment
+                          await apiCall('/api/orders/verify-payment', { 
+                         razorpay_payment_id: response.razorpay_payment_id, 
+                         razorpay_order_id: response.razorpay_order_id, 
+                        razorpay_signature: response.razorpay_signature 
+});
+                         await placeFinalOrderOnServer('online');
                         } catch(error) { showToast("Payment verification failed. Please contact support.", true); }
                     },
                     prefill: { name: user.name, email: user.email, contact: phone }, theme: { color: "#d97706" }
