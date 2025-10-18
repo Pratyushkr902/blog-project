@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
+
 const bcrypt = require('bcrypt');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -88,10 +88,33 @@ const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 
 
 // ================== SETUP SERVICES ==================
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
-});
+// ================== SETUP SERVICES ==================
+
+// ✅ FIX: Use SendGrid for email, not Nodemailer
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// This is the function we will use to send emails
+const sendEmail = async (to, subject, text) => {
+  const msg = {
+    to: to,
+    from: 'youremail@gmail.com', // ❗️ MUST be your SendGrid Verified Sender
+    subject: subject,
+    text: text,
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    if (error.response) {
+      console.error(error.response.body);
+    }
+    // Re-throw the error so the calling function knows it failed
+    throw new Error('Failed to send email.');
+  }
+};
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -114,7 +137,8 @@ const authenticateToken = (req, res, next) => {
 // --- USER & AUTH ROUTES ---
 
 // ✅ FIX: Corrected route path to match frontend calls.
-app.post('/api/users/request-otp', async (req, res) => {
+// ✅ FIX: Changed path to match frontend call
+app.post('/api/signup-request-otp', async (req, res) => { 
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required.' });
 
@@ -125,23 +149,23 @@ app.post('/api/users/request-otp', async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   
   try {
-    // ✅ FIX: Save OTP to the database instead of a temporary variable.
     await Otp.findOneAndUpdate({ email }, { code: otp, createdAt: Date.now() }, { upsert: true });
 
-    await transporter.sendMail({
-      from: `"Jovial Flames" <${process.env.GMAIL_USER}>`, to: email,
-      subject: 'Your OTP for Jovial Flames',
-      text: `Your OTP is: ${otp}. It is valid for 10 minutes.`
-    });
+    // ✅ FIX: Use the new SendGrid function
+    await sendEmail(
+      email,
+      'Your OTP for Jovial Flames',
+      `Your OTP is: ${otp}. It is valid for 10 minutes.`
+    );
+    
     res.status(200).json({ message: 'OTP sent successfully.' });
   } catch (err) {
     console.error('Error sending OTP:', err);
     res.status(500).json({ message: 'Failed to send OTP.' });
   }
 });
-
 // ✅ FIX: Corrected route path.
-app.post('/api/users/verify-otp', async (req, res) => {
+app.post('/api/verify-otp', async (req, res) => {
   const { name, email, password, otp } = req.body;
   if (!name || !email || !password || !otp) {
     return res.status(400).json({ message: 'All fields are required.' });
@@ -164,7 +188,7 @@ app.post('/api/users/verify-otp', async (req, res) => {
 });
 
 // ✅ FIX: Corrected route path.
-app.post('/api/users/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
@@ -183,6 +207,49 @@ app.post('/api/users/login', async (req, res) => {
   }
 });
 
+// ✅ FIX: ADDED MISSING FORGOT PASSWORD ROUTE
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    // Send a 200 response even if user not found for security
+    return res.status(200).json({ message: 'If an account exists, an OTP has been sent.' });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  try {
+    await Otp.findOneAndUpdate({ email }, { code: otp, createdAt: Date.now() }, { upsert: true });
+    await sendEmail(
+      email,
+      'Password Reset OTP',
+      `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`
+    );
+    res.status(200).json({ message: 'OTP sent successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to send OTP.' });
+  }
+});
+
+// ✅ FIX: ADDED MISSING RESET PASSWORD ROUTE
+app.post('/api/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+    const storedOtp = await Otp.findOne({ email, code: otp });
+    if (!storedOtp) return res.status(400).json({ message: 'Invalid or expired OTP.' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.updateOne({ email }, { password: hashedPassword });
+    
+    await Otp.deleteOne({ email, code: otp }); // Clean up the OTP
+    res.status(200).json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error resetting password.' });
+  }
+});
 
 // --- ORDER & PAYMENT ROUTES ---
 
