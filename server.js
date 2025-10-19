@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY); // <-- ADD THIS LINE
 const bcrypt = require('bcrypt');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -90,6 +91,9 @@ const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 // ================== SETUP SERVICES ==================
 // ================== SETUP SERVICES ==================
 // This is our function to send emails using SendGrid
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 const sendEmail = async (to, subject, text) => {
   const msg = {
     to: to,
