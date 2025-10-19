@@ -353,7 +353,39 @@ app.post('/api/orders/place', authenticateToken, async (req, res) => {
   }
 });
 
+// --- ROUTE TO GET/TRACK A SPECIFIC ORDER ---
+// Note: Using GET request and order ID in the URL path
+app.get('/api/orders/track/:orderId', authenticateToken, async (req, res) => {
+  const { orderId } = req.params; // Get the order ID from the URL
 
+  if (!orderId) {
+    return res.status(400).json({ message: 'Order ID is required.' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Find the specific order within the user's orders array
+    // Mongoose arrays have an .id() method to find subdocuments
+    const order = user.orders.id(orderId) || user.orders.find(o => o.id === orderId); // Find by Mongoose _id or your custom 'id'
+
+    if (!order) {
+      console.log(`Order tracking attempt: Order ${orderId} not found for user ${user.email}`);
+      return res.status(404).json({ message: `Order ${orderId} not found.` });
+    }
+
+    // Send back the found order details
+    console.log(`Order tracking success: Found order ${orderId} for user ${user.email}`);
+    res.status(200).json({ order: order }); // Send the order object back
+
+  } catch (error) {
+    console.error(`🔴 Error tracking order ${orderId} for user ${req.user?.email}:`, error);
+    res.status(500).json({ message: 'Error tracking order.' });
+  }
+});
 // --- 404 Handler ---
 // This will catch any request that doesn't match a route above
 app.use((req, res) => {

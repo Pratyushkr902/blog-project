@@ -1048,91 +1048,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+window.trackOrderById = async () => { // Make the function async
+    const orderIdToTrack = getElement('trackOrderIdInput').value.trim().toUpperCase();
+    if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
 
-    // Mock Tracking for now - Replace with API call if tracking endpoint exists
-    window.trackOrderById = () => {
-        const orderIdToTrack = getElement('trackOrderIdInput').value.trim().toUpperCase();
-        if (!orderIdToTrack) return showToast("Please enter an Order ID.", true);
+    // --- Remove Mock Data ---
+    // const mockOrders = [ ... ]; // DELETE THIS MOCK ARRAY
+    // const order = mockOrders.find(o => o.id === orderIdToTrack); // DELETE THIS LINE
 
-        // --- MOCK DATA - Replace with actual API call ---
-        const mockOrders = [
-            {id: 'JF123456', status: 'Delivered', date: '15/10/2025', history: [{status: 'Order Placed', time: '14/10/2025 10:00'}, {status: 'Shipped', time: '14/10/2025 18:00'}, {status: 'Delivered', time: '15/10/2025 11:30'}]},
-            {id: 'JF654321', status: 'Shipped', date: '16/10/2025', history: [{status: 'Order Placed', time: '16/10/2025 09:00'}, {status: 'Shipped', time: '16/10/2025 17:00'}]},
-            {id: 'JF' + Date.now().toString().slice(-6), status: 'Order Placed', date: new Date().toLocaleDateString('en-IN'), history: [{status: 'Order Placed', time: new Date().toLocaleString('en-IN')}]} // Example for a new order
-        ];
-        const order = mockOrders.find(o => o.id === orderIdToTrack);
-        // --- END MOCK DATA ---
-
-        /* --- Replace Mock with API Call: ---
-        apiCall('/api/orders/track', { orderId: orderIdToTrack })
-            .then(orderData => {
-                if (orderData && orderData.order) {
-                    showTrackingDetails(orderData.order);
-                } else {
-                    showToast(`Order #${orderIdToTrack} not found.`, true);
-                }
-            })
-            .catch(error => {
-                showToast(`Error tracking order: ${error.message}`, true);
-            });
-        */
-
-        // Using mock data for now:
-        if (order) {
-            showTrackingDetails(order);
-        } else {
-            showToast(`Order #${orderIdToTrack} not found.`, true);
-        }
-    };
-
-    const showTrackingDetails = (order) => { // Takes the full order object now
-        if (!order) return;
-        getElement('tracking-order-id').textContent = order.id;
-        const trackingDetailsContainer = getElement('tracking-details');
-        const statuses = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
-        const currentStatusIndex = statuses.indexOf(order.status);
-
-        let timelineHTML = '<ul class="tracking-timeline">';
-        // Use order.history if available, otherwise just show current status
-        if (order.history && order.history.length > 0) {
-             // Sort history just in case, though it should be chronological
-             // order.history.sort((a, b) => new Date(a.time) - new Date(b.time)); // Adjust date parsing if needed
-
-             // Create timeline based on actual history events
-             order.history.forEach((event, index) => {
-                 const isCompleted = true; // All history events are completed
-                 let className = 'completed';
-                 // Mark the last event in history as 'active' if it matches the overall status
-                 if (index === order.history.length - 1 && event.status === order.status) {
-                     className += ' active';
-                 }
-                 timelineHTML += `<li class="${className}">
-                                     <div class="status">${event.status}</div>
-                                     <div class="time">${event.time || ''}</div>
-                                 </li>`;
-             });
-             // Add future statuses if the order is not yet delivered
-             if (currentStatusIndex < statuses.length - 1) {
-                 for (let i = currentStatusIndex + 1; i < statuses.length; i++) {
-                     timelineHTML += `<li><div class="status">${statuses[i]}</div></li>`; // Not completed yet
-                 }
-             }
-
-        } else {
-            // Fallback if no history is provided - show based on current status only
-            statuses.forEach((status, index) => {
-                const isCompleted = index <= currentStatusIndex;
-                let className = isCompleted ? 'completed' : '';
-                if (isCompleted && index === currentStatusIndex) className += ' active';
-                timelineHTML += `<li class="${className}"><div class="status">${status}</div></li>`;
-            });
+    // --- Add API Call ---
+    try {
+        const token = localStorage.getItem('jovialFlamesToken');
+        if (!token) {
+             openAuthModal('login'); // Ask user to log in if not logged in
+             return showToast("Please log in to track orders.", true);
         }
 
-        timelineHTML += '</ul>';
-        trackingDetailsContainer.innerHTML = timelineHTML;
-        openTrackingModal();
-    };
+        // Construct the URL for the GET request
+        const trackUrl = `${API_URL}/api/orders/track/${orderIdToTrack}`;
 
+        // Use fetch for GET request (apiCall function is currently POST only)
+        const response = await fetch(trackUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not track order.');
+        }
+
+        // If successful, show tracking details with the real order data
+        if (data && data.order) {
+            showTrackingDetails(data.order); // Pass the real order object
+        } else {
+             showToast(`Order ${orderIdToTrack} not found.`, true);
+        }
+
+    } catch (error) {
+        console.error("Error tracking order:", error);
+        showToast(`Error tracking order: ${error.message}`, true);
+    }
+};
 
     // --- 7. MISC FORM HANDLERS & EVENT LISTENERS ---
     window.handleSubmit = (e) => {
