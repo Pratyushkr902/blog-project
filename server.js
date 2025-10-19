@@ -91,7 +91,6 @@ const Otp = mongoose.models.Otp || mongoose.model('Otp', OtpSchema);
 // ================== SETUP SERVICES ==================
 // ================== SETUP SERVICES ==================
 // This is our function to send emails using SendGrid
-const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendEmail = async (to, subject, text) => {
