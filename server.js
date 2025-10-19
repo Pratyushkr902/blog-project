@@ -172,7 +172,7 @@ app.post('/api/signup-request-otp', async (req, res) => {
   }
 });
 // ✅ FIX: Corrected route path.
-app.post('/api/verify-otp', async (req, res) => {
+app.post('/api/signup-verify', async (req, res) => { // <-- CHANGE THIS LINE
   const { name, email, password, otp } = req.body;
   if (!name || !email || !password || !otp) {
     return res.status(400).json({ message: 'All fields are required.' });
