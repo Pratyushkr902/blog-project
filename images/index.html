@@ -445,7 +445,7 @@
             <p class="muted">Subscribe to our newsletter for exclusive deals and a discount on your first order.</p>
             <div class="news-form">
               <input class="news-input" type="email" placeholder="Enter your email" id="newsletterEmail" />
-              <button class="btn" onclick="subscribe()">Subscribe</button>
+              <button class="btn" id="subscribe()">Subscribe</button>
             </div>
           </section>
     </main>
@@ -1095,22 +1095,50 @@ window.trackOrderById = async () => { // Make the function async
 };
 
     // --- 7. MISC FORM HANDLERS & EVENT LISTENERS ---
-    window.handleSubmit = (e) => {
+    // --- 7. MISC FORM HANDLERS & EVENT LISTENERS ---
+    
+    // REPLACE your old handleSubmit function with this one
+    window.handleSubmit = async (e) => {
         e.preventDefault();
-        const name = getElement('name').value;
-        showToast(`Thanks, ${name}! We'll be in touch.`);
-        e.target.reset();
-    };
+        const button = e.target.querySelector('button[type="submit"]');
+        const name = getElement('name').value.trim();
+        const email = getElement('email').value.trim();
+        const message = getElement('message').value.trim();
 
-    window.subscribe = () => {
-        const email = getElement('newsletterEmail').value;
+        if (!name || !email || !message) {
+            return showToast("Please fill out all fields.", true);
+        }
+
+        try {
+            // Use your apiCall function to send the data
+            const data = await apiCall('/api/contact', { name, email, message }, button);
+            showToast(data.message); // Show success message from server
+            e.target.reset();
+        } catch (error) {
+            // Error toast is already handled by apiCall
+            console.error("Contact form error:", error);
+        }
+    };
+// REPLACE your old subscribe function with this one
+    window.subscribe = async () => {
+        const emailInput = getElement('newsletterEmail');
+        const button = getElement('subscribeBtn');
+        const email = emailInput.value.trim();
+
         if (!email || !email.includes('@')) {
             return showToast("Please enter a valid email.", true);
         }
-        showToast(`Discount code sent to ${email}!`);
-        getElement('newsletterEmail').value = "";
-    };
 
+        try {
+            // Use your apiCall function to send the email
+            const data = await apiCall('/api/subscribe', { email }, button);
+            showToast(data.message); // Show success message from server
+            emailInput.value = ""; // Clear input on success
+        } catch (error) {
+            // Error toast is already handled by apiCall
+            console.error("Subscribe error:", error);
+        }
+    };
     // Added event listeners for buttons
     getElement("loginBtn").addEventListener("click", () => openAuthModal('login'));
     getElement("signupBtn").addEventListener("click", () => openAuthModal('signup'));

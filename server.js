@@ -259,7 +259,71 @@ app.post('/api/reset-password', async (req, res) => {
 });
 
 // --- ORDER & PAYMENT ROUTES ---
+// ================== ROUTES ==================
 
+// --- USER & AUTH ROUTES ---
+// ... (all your existing user routes are here) ...
+
+
+// --- CONTACT & SUBSCRIBE ROUTES ---
+
+// NEW ROUTE FOR THE CONTACT FORM
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+    const adminEmail = 'jovialflames@gmail.com'; // Your email
+    const subject = `New Contact Message from ${name}`;
+    const text = `You have a new message from:\n
+Name: ${name}\n
+Email: ${email}\n
+Message:\n${message}`;
+
+    // Use your existing sendEmail function
+    await sendEmail(adminEmail, subject, text);
+    
+    res.status(200).json({ message: 'Message sent successfully!' });
+
+  } catch (error) {
+    console.error('Error sending contact email:', error);
+    res.status(500).json({ message: 'Failed to send message.' });
+  }
+});
+
+// NEW ROUTE FOR THE NEWSLETTER FORM
+app.post('/api/subscribe', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    const subject = 'Your 10% Discount Code from Jovial Flames!';
+    const text = `Thank you for subscribing!
+    
+Use this discount code for 10% off your next order: JOVIAL10
+    
+We're happy to have you!`;
+
+    // Use your existing sendEmail function to email the USER
+    await sendEmail(email, subject, text);
+    
+    res.status(200).json({ message: `Discount code sent to ${email}!` });
+
+  } catch (error) {
+    console.error('Error sending subscribe email:', error);
+    res.status(500).json({ message: 'Failed to send email.' });
+  }
+});
+
+
+// --- ORDER & PAYMENT ROUTES ---
+// ... (all your existing order routes go after this) ...
 // ✅ FIX: Corrected route path and secured with authentication.
 app.post('/api/orders/create-payment-order', authenticateToken, async (req, res) => {
   try {
